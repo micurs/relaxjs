@@ -60,6 +60,10 @@ gulp.task('relaxjs_d_ts', [ 'relaxjs' ], function () {
         .pipe( gulp.dest('/dist') );
 });
 
+// unit test task
+// ----------------------------------------------------
+
+gulp.task('test', shell.task(['jasmine-node --verbose --color tests']) );
 
 // watch task
 // ----------------------------------------------------

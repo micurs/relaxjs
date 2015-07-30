@@ -140,7 +140,7 @@ export function parseRequestData( req: http.ServerRequest,  contentType: string 
         }
       }
       catch( err ) {
-        _log.error('Error parsing incoming data with %s',contentType );
+        _log.error('Error parsing incoming data - %s - with %s',bodyData,contentType );
         _log.error( err );
         later.reject(err);
       }
@@ -161,21 +161,21 @@ export function emitCompileViewError( content: string, err: TypeError, filename:
 /*
  * Creates a RxError object with the given message and resource name
  */
-export function emitError( content: string, resname: string ) : relaxjs.RxError {
-  var errTitle = format('[error.500] Serving: {0}', resname);
+export function emitError( content: string, resname: string, errcode: number = 500 ) : relaxjs.RxError {
+  var errTitle = format('Error serving: {0}', resname);
   var errMsg = content;
   _log.error(errTitle);
-  return new relaxjs.RxError(errMsg, errTitle, 500 );
+  return new relaxjs.RxError(errMsg, errTitle, errcode );
 }
 
 /*
  * Emits a promise for a failure message
 */
-export function promiseError( msg: string, resName : string ) : Q.Promise< relaxjs.Embodiment > {
+export function promiseError( msg: string, resName : string, errcode: number = 500  ) : Q.Promise< relaxjs.Embodiment > {
   var later = Q.defer< relaxjs.Embodiment >();
   _.defer( () => {
     _log.error(msg);
-    later.reject( emitError( msg, resName )  )
+    later.reject( emitError( msg, resName, errcode )  )
   });
   return later.promise;
 }
@@ -205,7 +205,7 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
 
   var mtype = mime.lookup(filename);
   var laterAction = Q.defer< relaxjs.Embodiment >();
-  var staticFile = '.'+filename;
+  var staticFile = '.' + filename;
   log.info('serving %s %s',fname,staticFile);
   fs.readFile( staticFile, function( err : Error, content : Buffer ) {
     if ( err ) {
