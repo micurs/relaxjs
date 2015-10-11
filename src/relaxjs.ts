@@ -4,11 +4,7 @@
  * -------------------------------------------------------
 */
 
-///<reference path='../typings/node/node.d.ts' />
-///<reference path='../typings/lodash/lodash.d.ts' />
-///<reference path='../typings/q/Q.d.ts' />
-///<reference path='../typings/mime/mime.d.ts' />
-///<reference path='../typings/xml2js/xml2js.d.ts' />
+///<reference path='references.ts' />
 
 import * as http from "http";
 import * as fs from "fs";
@@ -25,8 +21,8 @@ import * as routing from './routing';
 exports.routing = routing;
 exports.internals = internals;
 
-var package = require(__dirname+'/../package.json');
-var version = package.version;
+var packageinfo = require(__dirname+'/../package.json');
+var version = packageinfo.version;
 
 export function relaxjs() : void {
   console.log(`relaxjs version ${version}`);
@@ -468,16 +464,20 @@ export class Embodiment {
   public httpCode : number;
   public location : string;
   public mimeType : string;
-  public body : Buffer;
+  public bodyData : Buffer;
+  public bodyStream: fs.ReadStream;
   public cookiesData: string[] = []; // example a cookie valie would be ["type=ninja", "language=javascript"]
   public additionalHeaders : ResponseHeaders = {};
 
   /**
    * Builds a new Embodiment object that can be served back as a response to a HTTP request.
    */
-  constructor(  mimeType: string, code: number = 200, body?: Buffer ) {
+  constructor(  mimeType: string, code: number = 200, data?: Buffer | fs.ReadStream ) {
     this.httpCode = code;
-    this.body = body;
+    if ( data instanceof Buffer )
+      this.bodyData = <Buffer>data;
+    else
+      this.bodyStream = <fs.ReadStream>data;
     this.mimeType = mimeType;
   }
 
@@ -501,8 +501,8 @@ export class Embodiment {
   serve(response: http.ServerResponse) : void {
     var log = internals.log().child( { func: 'Embodiment.serve'} );
     var headers = { 'content-type' : this.mimeType };
-    if ( this.body )
-      headers['content-length'] = this.body.length;
+    if ( this.bodyData )
+      headers['content-length'] = this.bodyData.length;
     if ( this.location )
       headers['Location'] = this.location;
 
@@ -516,22 +516,30 @@ export class Embodiment {
       response.setHeader('Set-Cookie', <any>(this.cookiesData) );
 
     response.writeHead( this.httpCode, headers );
-    if ( this.body ) {
-      response.write(this.body);
-      if ( this.body.length>1024 )
-        log.info( 'Sending %s Kb (as %s)', Math.round(this.body.length/1024), this.mimeType ) ;
+    if ( this.bodyData ) {
+      response.write(this.bodyData);
+      if ( this.bodyData.length>1024 )
+        log.info( 'Sending %s Kb (as %s)', Math.round(this.bodyData.length/1024), this.mimeType ) ;
       else
-        log.info( 'Sending %s bytes (as %s)', this.body.length,this.mimeType );
+        log.info( 'Sending %s bytes (as %s)', this.bodyData.length,this.mimeType );
+      response.end();
+      log.info( '<< REQUEST: Complete');
     }
-    response.end();
-    log.info( '<< REQUEST: Complete');
+    else if ( this.bodyStream ) {
+      log.info( 'Streaming Data');
+      this.bodyStream.pipe( response, { end: false } );
+      this.bodyStream.on('end', () => {
+        response.end();
+        log.info( 'Stream Complete');
+      });
+    }
   }
 
   /**
    * utility: return the body of this embodiment as utf-8 encoded string
    */
   bodyAsString() : string {
-    return this.body.toString('utf-8');
+    return this.bodyData.toString('utf-8');
   }
   
   /**

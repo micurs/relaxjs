@@ -3,14 +3,6 @@
  * by Michele Ursino - 2015
 */
 
-///<reference path='../typings/node/node.d.ts' />
-///<reference path='../typings/lodash/lodash.d.ts' />
-///<reference path='../typings/q/Q.d.ts' />
-///<reference path='../typings/mime/mime.d.ts' />
-///<reference path='../typings/bunyan/bunyan.d.ts' />
-///<reference path='../typings/xml2js/xml2js.d.ts' />
-///<reference path='../typings/multiparty/multiparty.d.ts' />
-
 ///<reference path='./relaxjs.ts' />
 
 import http = require("http");
@@ -206,7 +198,26 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
   var mtype = mime.lookup(filename);
   var laterAction = Q.defer< relaxjs.Embodiment >();
   var staticFile = '.' + filename;
-  log.info('serving %s %s',fname,staticFile);
+  log.info('serving %s',staticFile);
+  
+  if ( !fs.existsSync(staticFile) ) {
+    log.warn('File "%s" not found',staticFile);
+    laterAction.reject( new relaxjs.RxError(`File ${filename} not found`, 'File Not Found', 404 ) );
+  } 
+  else {
+    
+    fs.stat( staticFile , ( err, stats: fs.Stats ) => {
+      log.info(`Sreaming ${staticFile}`);
+      headers['content-length'] = stats.size.toString();
+      var readStream = fs.createReadStream( staticFile );
+      var reply = new relaxjs.Embodiment( mtype, 200, readStream );
+      reply.additionalHeaders = headers;
+      laterAction.resolve( reply );
+    });
+   
+  }
+  
+  /*
   fs.readFile( staticFile, function( err : Error, content : Buffer ) {
     if ( err ) {
       log.warn('%s file "%s" not found',fname,staticFile);
@@ -218,6 +229,8 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
       laterAction.resolve( reply );
     }
   });
+  */
+  
   return laterAction.promise;
 }
 

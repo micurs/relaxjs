@@ -48,14 +48,16 @@ var relaxjs_dts_opts = {
   target: 'ES5',
   module: 'commonjs',
   declaration: true,
-  removeComments: false,
-  out: 'relaxjs.d.ts'
+  removeComments: true,
+  out: 'relaxjs.d.ts',
+  outDir: 'dist',
+  sourceRoot: '../src'
 };
 
-gulp.task('relaxjs_d_ts', [ 'relaxjs' ], function () {
+gulp.task('relaxjs_d_ts', function () {
   return gulp.src( [ './src/relaxjs.ts' ])
         .pipe(print(function (fp) { return "[relaxjs_d_ts] tsd << " + fp; }))
-        .pipe(shell(['dts-generator --name relaxjs --main relaxjs.ts --baseDir src --out relaxjs.d.ts routing.ts internals.ts relaxjs.ts']))
+        .pipe(shell(['dts-generator --name relaxjs --main relaxjs/relaxjs --baseDir src --exclude internals.ts --out dist/relaxjs.d.ts routing.ts internals.ts relaxjs.ts']))
         .pipe(print(function (fp) { return "[relaxjs_d_ts] tsd >> " + fp; }))
         .pipe( gulp.dest('/dist') );
 });

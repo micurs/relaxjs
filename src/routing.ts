@@ -3,11 +3,6 @@
  * by Michele Ursino - 2015
  */
 
-///<reference path='../typings/node/node.d.ts' />
-///<reference path='../typings/lodash/lodash.d.ts' />
-///<reference path='../typings/q/Q.d.ts' />
-///<reference path='../typings/mime/mime.d.ts' />
-
 ///<reference path='./relaxjs.ts' />
 
 import http = require("http");

@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "command": "gulp",
+  "isShellCommand": true,
+  "args": [ "--no-color" ],
+  "tasks": [
+    {
+      "taskName": "default",
+      "args": [ "relaxjs" ],
+      "isBuildCommand": true,
+      "problemMatcher": [
+        "$lessCompile",
+        "$tsc",
+        "$jshint"
+      ]
+    },
+    {
+      "taskName": "test",
+      "isBuildCommand": false,
+      "isTestCommand": true,
+      "showOutput": "always",
+      "args": [ "test" ]
+    }
+  ]
+}
