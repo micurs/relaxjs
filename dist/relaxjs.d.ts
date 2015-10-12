@@ -3,14 +3,40 @@
 /// <reference path="../typings/q/Q.d.ts" />
 /// <reference path="../typings/mime/mime.d.ts" />
 /// <reference path="../typings/xml2js/xml2js.d.ts" />
-/// <reference path="../typings/bunyan/bunyan.d.ts" />
-/// <reference path="../typings/multiparty/multiparty.d.ts" />
-declare module 'relaxjs/relaxjs' {
-	/// <reference path="references.d.ts" />
-	import * as http from "http";
-	import * as fs from "fs";
-	import * as Q from 'q';
-	import * as routing from 'relaxjs/routing';
+
+
+declare module "relaxjs" {
+  
+	import http = require("http");
+	import fs = require("fs");
+	import Q = require('q');
+	import relaxjs = require('relaxjs');
+
+	export function relaxjs(): void;
+
+  export module routing {
+
+    export class Route {
+          verb: string;
+          static: boolean;
+          pathname: string;
+          path: string[];
+          query: any;
+          outFormat: string;
+          inFormat: string;
+          cookies: string[];
+          request: http.ServerRequest;
+          response: http.ServerResponse;
+          headers: relaxjs.ResponseHeaders;
+          constructor(uri?: string, outFormat?: string, inFormat?: string);
+          stepThrough(stpes: number): Route;
+          getNextStep(): string;
+          addResponseHeaders(h: relaxjs.ResponseHeaders): void;
+      }
+      export function fromRequestResponse(request: http.ServerRequest, response: http.ServerResponse): Route;
+
+  }
+
 	export function relaxjs(): void;
 	export interface ResourceMap {
 	    [name: string]: Container[];
@@ -322,32 +348,4 @@ declare module 'relaxjs/relaxjs' {
 	}
 	export function site(name?: string): Site;
 
-}
-declare module 'relaxjs/routing' {
-	/// <reference path="relaxjs.d.ts" />
-	import http = require("http");
-	import relaxjs = require('relaxjs/relaxjs');
-	export class Route {
-	    verb: string;
-	    static: boolean;
-	    pathname: string;
-	    path: string[];
-	    query: any;
-	    outFormat: string;
-	    inFormat: string;
-	    cookies: string[];
-	    request: http.ServerRequest;
-	    response: http.ServerResponse;
-	    headers: relaxjs.ResponseHeaders;
-	    constructor(uri?: string, outFormat?: string, inFormat?: string);
-	    stepThrough(stpes: number): Route;
-	    getNextStep(): string;
-	    addResponseHeaders(h: relaxjs.ResponseHeaders): void;
-	}
-	export function fromRequestResponse(request: http.ServerRequest, response: http.ServerResponse): Route;
-
-}
-declare module 'relaxjs' {
-	import main = require('relaxjs/relaxjs');
-	export = main;
 }

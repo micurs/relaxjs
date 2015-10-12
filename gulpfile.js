@@ -57,7 +57,7 @@ var relaxjs_dts_opts = {
 gulp.task('relaxjs_d_ts', function () {
   return gulp.src( [ './src/relaxjs.ts' ])
         .pipe(print(function (fp) { return "[relaxjs_d_ts] tsd << " + fp; }))
-        .pipe(shell(['dts-generator --name relaxjs --main relaxjs/relaxjs --baseDir src --exclude internals.ts --out dist/relaxjs.d.ts routing.ts internals.ts relaxjs.ts']))
+        .pipe(shell(['dts-generator --name relaxjs --main relaxjs/relaxjs --baseDir src --exclude internals.ts --out dist/update_relaxjs.d.ts internals.ts routing.ts relaxjs.ts']))
         .pipe(print(function (fp) { return "[relaxjs_d_ts] tsd >> " + fp; }))
         .pipe( gulp.dest('/dist') );
 });
