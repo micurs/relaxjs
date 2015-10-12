@@ -1,10 +1,10 @@
-/// <reference path="../typings/node/node.d.ts" />
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/mime/mime.d.ts" />
-/// <reference path="../typings/xml2js/xml2js.d.ts" />
 
 
 declare module "relaxjs" {
+  /// <reference path="../typings/node/node.d.ts" />
+  /// <reference path="../typings/lodash/lodash.d.ts" />
+  /// <reference path="../typings/mime/mime.d.ts" />
+  /// <reference path="../typings/xml2js/xml2js.d.ts" />
   
 	import http = require("http");
 	import fs = require("fs");
