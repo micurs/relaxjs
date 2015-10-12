@@ -8,6 +8,7 @@
 
 import * as http from "http";
 import * as fs from "fs";
+import * as stream from "stream"
 import * as url from 'url';
 import * as path from 'path';
 import * as Q from 'q';
@@ -472,12 +473,13 @@ export class Embodiment {
   /**
    * Builds a new Embodiment object that can be served back as a response to a HTTP request.
    */
-  constructor(  mimeType: string, code: number = 200, data?: Buffer | fs.ReadStream ) {
+  constructor(  mimeType: string, code: number = 200, data?: Buffer | stream.Readable ) {
     this.httpCode = code;
-    if ( data instanceof Buffer )
-      this.bodyData = <Buffer>data;
+    if ( data instanceof stream.Readable )
+      this.bodyStream = <stream.Readable>data;
     else
-      this.bodyStream = <fs.ReadStream>data;
+      this.bodyData = <Buffer>data;
+
     this.mimeType = mimeType;
   }
 

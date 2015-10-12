@@ -10,6 +10,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 ///<reference path='references.ts' />
 var http = require("http");
+var stream = require("stream");
 var Q = require('q');
 var _ = require("lodash");
 var xml2js = require('xml2js');
@@ -315,10 +316,10 @@ var Embodiment = (function () {
         this.cookiesData = []; // example a cookie valie would be ["type=ninja", "language=javascript"]
         this.additionalHeaders = {};
         this.httpCode = code;
-        if (data instanceof Buffer)
-            this.bodyData = data;
-        else
+        if (data instanceof stream.Readable)
             this.bodyStream = data;
+        else
+            this.bodyData = data;
         this.mimeType = mimeType;
     }
     /**

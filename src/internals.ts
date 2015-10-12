@@ -204,8 +204,7 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
     log.warn('File "%s" not found',staticFile);
     laterAction.reject( new relaxjs.RxError(`File ${filename} not found`, 'File Not Found', 404 ) );
   } 
-  else {
-    
+  else {   
     fs.stat( staticFile , ( err, stats: fs.Stats ) => {
       log.info(`Sreaming ${staticFile}`);
       headers['content-length'] = stats.size.toString();
