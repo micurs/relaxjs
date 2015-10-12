@@ -1,6 +1,5 @@
 /// <reference path="../typings/node/node.d.ts" />
 /// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/q/Q.d.ts" />
 /// <reference path="../typings/mime/mime.d.ts" />
 /// <reference path="../typings/xml2js/xml2js.d.ts" />
 
@@ -9,7 +8,7 @@ declare module "relaxjs" {
   
 	import http = require("http");
 	import fs = require("fs");
-	import Q = require('q');
+	// import Q = require('q');
 	import relaxjs = require('relaxjs');
 
 	export function relaxjs(): void;
@@ -64,13 +63,15 @@ declare module "relaxjs" {
 	export interface HttpPlayer {
 	    name: string;
 	    urlName: string;
+      /*
 	    head(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    get(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    post(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    put(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    delete(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    patch(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
-	}
+	    */
+  }
 	export interface Resource {
 	    name: string;
 	    key?: string;
@@ -258,32 +259,32 @@ declare module "relaxjs" {
 	     * HTTP verb HEAD response functiion. Analyze the give route and redirect the call to the appropriate
 	     * child resource if available.
 	     */
-	    head(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
+	    // head(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HTTP verb GET response functiion. Analyze the give route and redirect the call to the appropriate
 	     * child resource if available.
 	     */
-	    get(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
+	    // get(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HTTP verb POST response functiion. Analyze the give route and redirect the call to the appropriate
 	     * child resource if available.
 	     */
-	    post(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
+	    // post(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HTTP verb PATCH response functiion. Analyze the give route and redirect the call to the appropriate
 	     * child resource if available.
 	     */
-	    patch(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
+	    // patch(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HTTP verb PUT response functiion. Analyze the give route and redirect the call to the appropriate
 	     * child resource if available.
 	     */
-	    put(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
+	    // put(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate
 	     * child resource if available.
 	     */
-	    delete(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
+	    // delete(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	}
 	/**
 	 * ResourcePlayer absorbs a user defined resource and execute the HTTP requests.
@@ -320,31 +321,31 @@ declare module "relaxjs" {
 	    /**
 	     * Resource Player HEAD. Get the response as for a GET request, but without the response body.
 	    */
-	    head(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
+	    // head(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HttpPlayer GET. Analyze the route and redirect the call to a child resource or
 	     * will call the onGet() for the this resource.
 	    */
-	    get(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
+	    // get(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HttpPlayer DELETE. Analyze the route and redirect the call to a child resource or
 	     * will call the onGet() for the this resource.
 	    */
-	    delete(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
+	    // delete(route: routing.Route, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HttpPlayer POS. Analyze the route and redirect the call to a child resource or
 	     * will call the onPost() for the this resource.
 	     * The default action is to create a new subordinate of the web resource identified by the URI.
 	     * The body sent to a post must contain the resource name to be created.
 	    */
-	    post(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
+	    //post(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
 	    /**
 	     * HttpPlayer POS. Analyze the route and redirect the call to a child resource or
 	     * will call the onPost() for the this resource.
 	     * The default action is to apply partial modifications to a resource (as identified in the URI).
 	    */
-	    patch(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
-	    put(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
+	    // patch(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
+	    // put(route: routing.Route, body: any, filtersData: FiltersData): Q.Promise<Embodiment>;
 	}
 	export function site(name?: string): Site;
 
