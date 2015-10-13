@@ -535,6 +535,9 @@ export class Embodiment {
         log.info( 'Stream Complete');
       });
     }
+    else { // Anything else complete the response with no data attached.
+      response.end();
+    }
   }
 
   /**

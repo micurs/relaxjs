@@ -369,6 +369,9 @@ var Embodiment = (function () {
                 log.info('Stream Complete');
             });
         }
+        else {
+            response.end();
+        }
     };
     /**
      * utility: return the body of this embodiment as utf-8 encoded string
