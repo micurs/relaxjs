@@ -74,4 +74,4 @@ gulp.task('watch', function () {
   gulp.watch( relaxjs_modules , [ 'relaxjs', 'relaxjs_d_ts' ]);
 });
 
-gulp.task( 'default', ['relaxjs', 'relaxjs_d_ts']);
+gulp.task( 'default', ['relaxjs']);

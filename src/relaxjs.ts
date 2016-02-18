@@ -39,14 +39,14 @@ export interface ResourceMap {
 
 /*
  * Response headers as strings indexed by the header name
-*/ 
+*/
 export interface ResponseHeaders {
   [ headerName: string ] : string;
 }
 
 /*
  * Response definition: every resource generate an instance of ResourceResponse.
- * This is generated automatically from a resource by calling a response function: 
+ * This is generated automatically from a resource by calling a response function:
  * ok(), fail() or redirect() from a resource response function.
 */
 export interface ResourceResponse {
@@ -64,10 +64,10 @@ export interface FilterResultCB {
 
 /*
  * A filter function is called on every request and can stop the dispatch of the request to the
- * target resource. The call is asyncronous. When complete it must call the complete function 
+ * target resource. The call is asyncronous. When complete it must call the complete function
  * passed as third argument.
- * Important Notes: 
- * Filters are called by the Site before attempting to route any request to a resource. 
+ * Important Notes:
+ * Filters are called by the Site before attempting to route any request to a resource.
  * Filters can return data to the resource using the filterData member.
  * Filters must all succeed in order for the request to reach the resource
  * Filters are not called in any predefined order (there cannot be dependencies from each other filter)
@@ -85,7 +85,7 @@ interface RequestFilterDict {
 
 /*
  * Data produced from the filters functions are available using the filter name as index
-*/ 
+*/
 export interface FiltersData {
   [ name: string ] : any;
 }
@@ -483,7 +483,7 @@ export class Embodiment {
     this.mimeType = mimeType;
   }
 
-  /** 
+  /**
    * Add a serialized cookie (toString()) to be returned as part of this embodiment
    */
   addSetCookie( cookie: string ) {
@@ -498,7 +498,7 @@ export class Embodiment {
   }
 
   /**
-   * Serve this emnbodiment through the given ServerResponse 
+   * Serve this emnbodiment through the given ServerResponse
    */
   serve(response: http.ServerResponse) : void {
     var log = internals.log().child( { func: 'Embodiment.serve'} );
@@ -546,7 +546,7 @@ export class Embodiment {
   bodyAsString() : string {
     return this.bodyData.toString('utf-8');
   }
-  
+
   /**
    * utility: return the bosy of this embodiment as a JSON object
    */
@@ -569,6 +569,7 @@ export class Site extends Container implements HttpPlayer {
   private _tempDir : string;
   private _pathCache = {};
   private _errorView : string = null;
+  private _allowCors : boolean = false;
 
   private _filters: RequestFilterDict = {} ;
   public enableFilters: boolean = false;
@@ -627,12 +628,19 @@ export class Site extends Container implements HttpPlayer {
   }
 
   /**
+   * Enable positive responses to OPTIONS Preflighted requests in CORS
+   */
+  public allowCORS( flag: boolean ) {
+    this._allowCors = flag;
+  }
+
+  /**
    * name of this resource (it should be 'site')
    */
   get name(): string {
     return 'site';
   }
-  
+
   /**
    * relaxjs version
    */
@@ -658,16 +666,16 @@ export class Site extends Container implements HttpPlayer {
    * Override the Error output using a custom view.
    */
   setErrorView( name: string ) {
-    this._errorView = name;  
+    this._errorView = name;
   }
-  
+
   // Output to response the given error following the mime type in format.
   private _outputError( response : http.ServerResponse, error:RxError, format: string ) {
     var self = this;
     var log = internals.log().child( { func: 'Site._outputError'} );
     var mimeType = format.split(/[\s,]+/)[0];
     var errCode = error.getHttpCode ? error.getHttpCode() : 500;
-    
+
     var errObj = {
       version: version ,
       result: 'error',
@@ -723,7 +731,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * Add a request filter. The given function will be called on every request
    * before reaching any resource. All request filters must succeed for the
-   * request to procees towards a resource. 
+   * request to procees towards a resource.
    */
   addRequestFilter( name: string, filterFunction: RequestFilter ) : void {
     var log = internals.log().child( { func: 'Site.addRequestFilter'} );
@@ -790,7 +798,7 @@ export class Site extends Container implements HttpPlayer {
   }
 
   /**
-   * Serve this site. This call creates a Server for the site and manage all the requests 
+   * Serve this site. This call creates a Server for the site and manage all the requests
    * by routing them to the appropriate resources.
   */
   serve() : http.Server {
@@ -807,9 +815,20 @@ export class Site extends Container implements HttpPlayer {
       log.info('      PATH: %s %s', route.pathname, route.query);
       log.info('Out FORMAT: %s', route.outFormat);
       log.info(' In FORMAT: %s', route.inFormat);
-
-      if ( site[msg.method.toLowerCase()] === undefined ) {
-        log.error('%s request is not supported ');
+      const httpMethod = msg.method.toLowerCase();
+      if ( site[httpMethod] === undefined ) {
+        if ( httpMethod==='options' && this._allowCors ) {
+          const emb = new Embodiment(route.outFormat);
+          emb.setAdditionalHeaders({
+            'Access-Control-Allow-Origin' : '*' ,
+            'Access-Control-Allow-Methods' : 'POST, GET, OPTIONS, PATCH, DELETE'
+          });
+          emb.serve(response);
+        }
+        else {
+          const err = new RxError(`Requst ${httpMethod} not allowed`,'request not supported', 403);
+          self._outputError(response,err,route.outFormat);
+        }
         return;
       }
 
@@ -820,7 +839,7 @@ export class Site extends Container implements HttpPlayer {
           self._checkFilters(route,bodyData,response )
             .then( ( allFiltersData: FiltersData ) => {
               // Execute the HTTP request
-              site[msg.method.toLowerCase()]( route, bodyData, allFiltersData )
+              site[httpMethod]( route, bodyData, allFiltersData )
                 .then( ( reply : Embodiment ) => {
                   reply.serve(response);
                 })
@@ -863,7 +882,7 @@ export class Site extends Container implements HttpPlayer {
   // HTTP Verb functions --------------------
 
   /**
-   * HTTP verb HEAD response functiion. Analyze the give route and redirect the call to the appropriate 
+   * HTTP verb HEAD response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    */
   head( route : routing.Route, body: any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
@@ -889,7 +908,7 @@ export class Site extends Container implements HttpPlayer {
   }
 
   /**
-   * HTTP verb GET response functiion. Analyze the give route and redirect the call to the appropriate 
+   * HTTP verb GET response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    */
   get( route : routing.Route, body: any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
@@ -926,7 +945,7 @@ export class Site extends Container implements HttpPlayer {
 
 
   /**
-   * HTTP verb POST response functiion. Analyze the give route and redirect the call to the appropriate 
+   * HTTP verb POST response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    */
   post( route : routing.Route, body: any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
@@ -946,7 +965,7 @@ export class Site extends Container implements HttpPlayer {
 
 
   /**
-   * HTTP verb PATCH response functiion. Analyze the give route and redirect the call to the appropriate 
+   * HTTP verb PATCH response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    */
   patch( route : routing.Route, body: any, filterData : FiltersData = {} ) : Q.Promise<Embodiment> {
@@ -966,7 +985,7 @@ export class Site extends Container implements HttpPlayer {
 
 
   /**
-   * HTTP verb PUT response functiion. Analyze the give route and redirect the call to the appropriate 
+   * HTTP verb PUT response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    */
   put( route : routing.Route, body: any, filterData : FiltersData = {}  ) : Q.Promise<Embodiment> {
@@ -986,7 +1005,7 @@ export class Site extends Container implements HttpPlayer {
 
 
   /**
-   * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate 
+   * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    */
   delete( route : routing.Route, body: any, filterData : FiltersData = {}   ) : Q.Promise<Embodiment> {
@@ -1037,7 +1056,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
   // public data = {};
 
-  /** 
+  /**
    * Build a active resource by providing a Resource data object
    */
   constructor( res : Resource, parent: Container ) {
@@ -1066,7 +1085,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
   }
 
   /**
-   * 
+   *
    */
   setOutputFormat( fmt: string ) {
     this._outFormat = fmt;
@@ -1210,7 +1229,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
 
   /**
-   * HttpPlayer GET. Analyze the route and redirect the call to a child resource or 
+   * HttpPlayer GET. Analyze the route and redirect the call to a child resource or
    * will call the onGet() for the this resource.
   */
   get( route: routing.Route, filtersData: FiltersData ) : Q.Promise< Embodiment > {
@@ -1280,7 +1299,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
 
   /**
-   * HttpPlayer DELETE. Analyze the route and redirect the call to a child resource or 
+   * HttpPlayer DELETE. Analyze the route and redirect the call to a child resource or
    * will call the onGet() for the this resource.
   */
   delete( route : routing.Route, filtersData: FiltersData ) : Q.Promise<Embodiment> {
@@ -1345,7 +1364,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
 
   /**
-   * HttpPlayer POS. Analyze the route and redirect the call to a child resource or 
+   * HttpPlayer POS. Analyze the route and redirect the call to a child resource or
    * will call the onPost() for the this resource.
    * The default action is to create a new subordinate of the web resource identified by the URI.
    * The body sent to a post must contain the resource name to be created.
@@ -1407,7 +1426,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
 
   /**
-   * HttpPlayer POS. Analyze the route and redirect the call to a child resource or 
+   * HttpPlayer POS. Analyze the route and redirect the call to a child resource or
    * will call the onPost() for the this resource.
    * The default action is to apply partial modifications to a resource (as identified in the URI).
   */

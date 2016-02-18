@@ -402,6 +402,7 @@ var Site = (function (_super) {
         this._home = '/';
         this._pathCache = {};
         this._errorView = null;
+        this._allowCors = false;
         this._filters = {};
         this.enableFilters = false;
         this._siteName = siteName;
@@ -449,6 +450,12 @@ var Site = (function (_super) {
         }
         log.info('No Direction found', verb, route.pathname);
         return undefined;
+    };
+    /**
+     * Enable positive responses to OPTIONS Preflighted requests in CORS
+     */
+    Site.prototype.allowCORS = function (flag) {
+        this._allowCors = flag;
     };
     Object.defineProperty(Site.prototype, "name", {
         /**
@@ -626,8 +633,20 @@ var Site = (function (_super) {
             log.info('      PATH: %s %s', route.pathname, route.query);
             log.info('Out FORMAT: %s', route.outFormat);
             log.info(' In FORMAT: %s', route.inFormat);
-            if (site[msg.method.toLowerCase()] === undefined) {
-                log.error('%s request is not supported ');
+            var httpMethod = msg.method.toLowerCase();
+            if (site[httpMethod] === undefined) {
+                if (httpMethod === 'options' && _this._allowCors) {
+                    var emb = new Embodiment(route.outFormat);
+                    emb.setAdditionalHeaders({
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PATCH, DELETE'
+                    });
+                    emb.serve(response);
+                }
+                else {
+                    var err = new RxError("Requst " + httpMethod + " not allowed", 'request not supported', 403);
+                    self._outputError(response, err, route.outFormat);
+                }
                 return;
             }
             // Parse the data received with this request
@@ -637,7 +656,7 @@ var Site = (function (_super) {
                 self._checkFilters(route, bodyData, response)
                     .then(function (allFiltersData) {
                     // Execute the HTTP request
-                    site[msg.method.toLowerCase()](route, bodyData, allFiltersData)
+                    site[httpMethod](route, bodyData, allFiltersData)
                         .then(function (reply) {
                         reply.serve(response);
                     })

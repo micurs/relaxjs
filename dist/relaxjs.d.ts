@@ -5,7 +5,7 @@ declare module "relaxjs" {
   /// <reference path="../typings/lodash/lodash.d.ts" />
   /// <reference path="../typings/mime/mime.d.ts" />
   /// <reference path="../typings/xml2js/xml2js.d.ts" />
-  
+
 	import http = require("http");
 	import fs = require("fs");
 	// import Q = require('q');
@@ -198,11 +198,16 @@ declare module "relaxjs" {
 	    private _tempDir;
 	    private _pathCache;
 	    private _errorView;
+	    private _allowCors;
 	    private _filters;
 	    enableFilters: boolean;
 	    constructor(siteName: string, parent?: Container);
 	    static $(name?: string): Site;
 	    protected _getDirection(route: routing.Route, verb?: string): Direction;
+	    /**
+	     * Enable positive responses to OPTIONS Preflighted requests in CORS
+	     */
+	    allowCORS(flag: boolean): void;
 	    /**
 	     * name of this resource (it should be 'site')
 	     */
@@ -255,36 +260,6 @@ declare module "relaxjs" {
 	     * Set the given path as location for temporary files produced by POST and PUT operations
 	     */
 	    setTempDirectory(path: string): void;
-	    /**
-	     * HTTP verb HEAD response functiion. Analyze the give route and redirect the call to the appropriate
-	     * child resource if available.
-	     */
-	    // head(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
-	    /**
-	     * HTTP verb GET response functiion. Analyze the give route and redirect the call to the appropriate
-	     * child resource if available.
-	     */
-	    // get(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
-	    /**
-	     * HTTP verb POST response functiion. Analyze the give route and redirect the call to the appropriate
-	     * child resource if available.
-	     */
-	    // post(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
-	    /**
-	     * HTTP verb PATCH response functiion. Analyze the give route and redirect the call to the appropriate
-	     * child resource if available.
-	     */
-	    // patch(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
-	    /**
-	     * HTTP verb PUT response functiion. Analyze the give route and redirect the call to the appropriate
-	     * child resource if available.
-	     */
-	    // put(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
-	    /**
-	     * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate
-	     * child resource if available.
-	     */
-	    // delete(route: routing.Route, body: any, filterData?: FiltersData): Q.Promise<Embodiment>;
 	}
 	/**
 	 * ResourcePlayer absorbs a user defined resource and execute the HTTP requests.
