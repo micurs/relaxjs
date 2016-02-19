@@ -832,35 +832,36 @@ export class Site extends Container implements HttpPlayer {
         return;
       }
 
+      let requestData;
       // Parse the data received with this request
       internals.parseRequestData(msg,route.inFormat)
         .then( ( bodyData: any ) => {
+          requestData = bodyData;
           log.info('check filters');
-          self._checkFilters(route,bodyData,response )
-            .then( ( allFiltersData: FiltersData ) => {
-              // Execute the HTTP request
-              site[httpMethod]( route, bodyData, allFiltersData )
-                .then( ( reply : Embodiment ) => {
-                  reply.serve(response);
-                })
-                .fail( (error) => {
-                  if ( error.httpCode >= 300 )
-                    log.error(`HTTP ${msg.method} failed : ${error.httpCode} : ${error.name} - ${error.message}`);
-                  self._outputError(response,error,route.outFormat);
-                })
-                .done();
+          return self._checkFilters(route,bodyData,response );
+        })
+        .then( ( allFiltersData: FiltersData ) => {
+          // Execute the HTTP request
+          site[httpMethod]( route, requestData, allFiltersData )
+            .then( ( reply : Embodiment ) => {
+              if ( self._allowCors) {
+                reply.setAdditionalHeaders({ 'Access-Control-Allow-Origin' : '*' });
+              }
+              reply.serve(response);
             })
-            .fail( (error: RxError ) => {
+            .fail( (error) => {
               if ( error.httpCode >= 300 )
                 log.error(`HTTP ${msg.method} failed : ${error.httpCode} : ${error.name} - ${error.message}`);
-              self._outputError(response, error , route.outFormat );
-              });
-          })
-        .fail( (error) => {
-          log.error(`HTTP ${msg.method} failed : ${error.httpCode} : request body could not be parsed: ${error.name} - ${error.message}`);
-          self._outputError(response,error,route.outFormat);
+              self._outputError(response,error,route.outFormat);
+            })
+            .done();
+        })
+        .fail( (error: RxError ) => {
+          if ( error.httpCode >= 300 )
+            log.error(`HTTP ${msg.method} failed : ${error.httpCode} : ${error.name} - ${error.message}`);
+          self._outputError(response, error , route.outFormat );
           });
-    }); // End http.createServer()
+        }); // End http.createServer()
     return srv;
   }
 

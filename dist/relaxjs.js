@@ -649,32 +649,33 @@ var Site = (function (_super) {
                 }
                 return;
             }
+            var requestData;
             // Parse the data received with this request
             internals.parseRequestData(msg, route.inFormat)
                 .then(function (bodyData) {
+                requestData = bodyData;
                 log.info('check filters');
-                self._checkFilters(route, bodyData, response)
-                    .then(function (allFiltersData) {
-                    // Execute the HTTP request
-                    site[httpMethod](route, bodyData, allFiltersData)
-                        .then(function (reply) {
-                        reply.serve(response);
-                    })
-                        .fail(function (error) {
-                        if (error.httpCode >= 300)
-                            log.error("HTTP " + msg.method + " failed : " + error.httpCode + " : " + error.name + " - " + error.message);
-                        self._outputError(response, error, route.outFormat);
-                    })
-                        .done();
+                return self._checkFilters(route, bodyData, response);
+            })
+                .then(function (allFiltersData) {
+                // Execute the HTTP request
+                site[httpMethod](route, requestData, allFiltersData)
+                    .then(function (reply) {
+                    if (self._allowCors) {
+                        reply.setAdditionalHeaders({ 'Access-Control-Allow-Origin': '*' });
+                    }
+                    reply.serve(response);
                 })
                     .fail(function (error) {
                     if (error.httpCode >= 300)
                         log.error("HTTP " + msg.method + " failed : " + error.httpCode + " : " + error.name + " - " + error.message);
                     self._outputError(response, error, route.outFormat);
-                });
+                })
+                    .done();
             })
                 .fail(function (error) {
-                log.error("HTTP " + msg.method + " failed : " + error.httpCode + " : request body could not be parsed: " + error.name + " - " + error.message);
+                if (error.httpCode >= 300)
+                    log.error("HTTP " + msg.method + " failed : " + error.httpCode + " : " + error.name + " - " + error.message);
                 self._outputError(response, error, route.outFormat);
             });
         }); // End http.createServer()

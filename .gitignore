@@ -35,3 +35,6 @@ node_modules
 /dist/relaxjs.js.map
 /dist/routing.js
 /dist/routing.js.map
+.vscode/settings.json
+relaxjs-0.2.0.tgz
+dist/update_relaxjs.d.ts
