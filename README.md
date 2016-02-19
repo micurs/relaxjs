@@ -29,7 +29,6 @@ site.add( {
   outFormat: 'application/json',
   data: { message: "Hello relaxjs !" }
 });
-site.setHome('/hello');
 site.serve().listen(9000);
 ```
 
@@ -44,31 +43,26 @@ node hello_relaxjs.js
 The Typescript version of the same example would look like this:
 
 ```
-// hello_relaxjs.ts
-import r = require('relaxjs');
+///<reference path='../node_modules/relaxjs/dist/relaxjs.d.ts' />
+
+import * as r from 'relaxjs';
 
 var site = r.site('simpleSite');
-
 site.add( {
   name: 'hello',
   outFormat: 'application/json',
   data: { message: "Hello relaxjs !" }
 });
-site.setHome('/hello');
 site.serve().listen(9000);
 ```
 
 With Typescript you need to compile the file and generate the Javascript file:
 
-```
-tsc -m commonjs -t es5 hello_relaxjs.ts
-```
+    tsc -m commonjs -t es5 hello_relaxjs.ts
 
 Then start you server:
 
-```
-node hello_relaxjs.js
-```
+    node hello_relaxjs.js
 
 # Main Concepts
 
@@ -88,13 +82,13 @@ All the code for your web service resides inside the resources.
 Some of the major features include:
 
 * Allows to define response functions inside a resource to respond to HTTP request (onGet, onPost, onDelete and onPatch)
-* Eecources can be nested inside other resources.
+* Recources can be nested inside other resources.
 * Resource response functions can set headers and defines the mime types of their responses.
-* Allows to define filters functions that are called before requests reach any resources
-* Support CORS protocol to build server REST application that can be called by other sites.
+* Allows to define filters functions that are called before requests reach any resources and can stop requests or gather data for the resources themselves.
+* Support CORS protocol to build server REST applications that can be called by other sites.
 * Support html views compiled by [lodash template](https://lodash.com/docs#template) function.
 
-For examples on each one these feature visit [relaxjs-examples repo](https://github.com/micurs/relaxjs-examples).
+For examples on each one these features visit the [relaxjs-examples repo](https://github.com/micurs/relaxjs-examples).
 
 License: MIT
 
