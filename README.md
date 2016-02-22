@@ -85,6 +85,7 @@ Some of the major features include:
 * Recources can be nested inside other resources.
 * Resource response functions can set headers and defines the mime types of their responses.
 * Allows to define filters functions that are called before requests reach any resources and can stop requests or gather data for the resources themselves.
+* Support streaming out of the box. So you can just respond to a request with a node stream and let relaxjs take care of the rest.
 * Support CORS protocol to build server REST applications that can be called by other sites.
 * Support html views compiled by [lodash template](https://lodash.com/docs#template) function.
 

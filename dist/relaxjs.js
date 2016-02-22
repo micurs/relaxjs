@@ -9,18 +9,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 ///<reference path='references.ts' />
-var http = require("http");
-var stream = require("stream");
+var http = require('http');
+var stream = require('stream');
 var Q = require('q');
-var _ = require("lodash");
+var _ = require('lodash');
 var xml2js = require('xml2js');
-// Sub-modules importing
+// sub-modules importing
 var internals = require('./internals');
 var routing = require('./routing');
 exports.routing = routing;
 exports.internals = internals;
+/* tslint:disable */
 var packageinfo = require(__dirname + '/../package.json');
 var version = packageinfo.version;
+/* tslint:enable */
 function relaxjs() {
     console.log("relaxjs version " + version);
 }
@@ -58,12 +60,12 @@ exports.RxError = RxError;
 */
 var Container = (function () {
     function Container(parent) {
+        this.data = {};
         this._name = '';
         this._cookiesData = []; // Outgoing cookies to be set
         this._cookies = []; // Received cookies unparsed
         this._resources = {};
         this._headers = {};
-        this.data = {};
         this._parent = parent;
     }
     Object.defineProperty(Container.prototype, "parent", {
@@ -124,11 +126,13 @@ var Container = (function () {
     Container.prototype.remove = function (child) {
         var log = internals.log().child({ func: 'Container.remove' });
         var resArr = this._resources[child.name];
-        if (!resArr)
+        if (!resArr) {
             return false;
+        }
         var idx = _.indexOf(resArr, child);
-        if (idx < 0)
+        if (idx < 0) {
             return false;
+        }
         resArr.splice(idx, 1);
         log.info('- %s', child.name);
         return true;
@@ -191,8 +195,9 @@ var Container = (function () {
     Container.prototype.getResource = function (pathname) {
         var route = new routing.Route(pathname);
         var direction = this._getDirection(route); // This one may return the resource directly if cached
-        if (!direction)
+        if (!direction) {
             return undefined;
+        }
         var resource = direction.resource;
         route.path = direction.route.path;
         while (route.path.length > 1) {
@@ -210,14 +215,17 @@ var Container = (function () {
     // Add a resource of the given type as child
     Container.prototype.add = function (newRes) {
         var log = internals.log().child({ func: 'Container.add' });
+        /* tslint:disable */
         newRes['_version'] = site().version;
         newRes['siteName'] = site().siteName;
+        /* tslint:enable */
         var resourcePlayer = new ResourcePlayer(newRes, this);
         // Add the resource player to the child resource container for this container.
         var indexName = internals.slugify(newRes.name);
         var childArray = this._resources[indexName];
-        if (childArray === undefined)
+        if (childArray === undefined) {
             this._resources[indexName] = [resourcePlayer];
+        }
         else {
             childArray.push(resourcePlayer);
         }
@@ -227,25 +235,29 @@ var Container = (function () {
     Container.prototype.getFirstMatching = function (typeName) {
         var childArray = this._resources[typeName];
         if (childArray === undefined) {
-            return null;
+            return undefined;
         }
         return childArray[0];
     };
     Container.prototype.getChild = function (name, idx) {
         if (idx === void 0) { idx = 0; }
-        if (this._resources[name] && this._resources[name].length > idx)
+        if (this._resources[name] && this._resources[name].length > idx) {
             return this._resources[name][idx];
-        else
+        }
+        else {
             return undefined;
+        }
     };
     /*
      * Return the number of children resources of the given type.
     */
     Container.prototype.childTypeCount = function (typeName) {
-        if (this._resources[typeName])
+        if (this._resources[typeName]) {
             return this._resources[typeName].length;
-        else
+        }
+        else {
             return 0;
+        }
     };
     /*
      * Return the total number of children resources for this node.
@@ -275,25 +287,37 @@ var Response = (function () {
     };
     // Helper function to call the response callback with a succesful code 'ok'
     Response.prototype.ok = function () {
-        var respObj = { result: 'ok', httpCode: 200, cookiesData: this._resource.cookiesData };
+        var respObj = {
+            cookiesData: this._resource.cookiesData,
+            httpCode: 200,
+            result: 'ok'
+        };
         respObj.data = this._resource.data;
         respObj.headers = this._resource.headers;
-        if (this._onOk)
+        if (this._onOk) {
             this._onOk(respObj);
+        }
     };
     // Helper function to call the response callback with a redirect code 303
     Response.prototype.redirect = function (where) {
-        var respObj = { result: 'ok', httpCode: 303, location: where, cookiesData: this._resource.cookiesData };
+        var respObj = {
+            cookiesData: this._resource.cookiesData,
+            httpCode: 303,
+            location: where,
+            result: 'ok'
+        };
         respObj.data = this._resource.data;
-        if (this._onOk)
+        if (this._onOk) {
             this._onOk(respObj);
+        }
     };
     // Helper function to call the response callback with a fail error
     Response.prototype.fail = function (err) {
         var log = internals.log().child({ func: this._resource.name + '.fail' });
         log.info('Call failed: %s', err.message);
-        if (this._onFail)
+        if (this._onFail) {
             this._onFail(err);
+        }
     };
     return Response;
 })();
@@ -316,10 +340,12 @@ var Embodiment = (function () {
         this.cookiesData = []; // example a cookie valie would be ["type=ninja", "language=javascript"]
         this.additionalHeaders = {};
         this.httpCode = code;
-        if (data instanceof stream.Readable)
+        if (data instanceof stream.Readable) {
             this.bodyStream = data;
-        else
+        }
+        else {
             this.bodyData = data;
+        }
         this.mimeType = mimeType;
     }
     /**
@@ -340,24 +366,30 @@ var Embodiment = (function () {
     Embodiment.prototype.serve = function (response) {
         var log = internals.log().child({ func: 'Embodiment.serve' });
         var headers = { 'content-type': this.mimeType };
-        if (this.bodyData)
+        if (this.bodyData) {
             headers['content-length'] = this.bodyData.length;
-        if (this.location)
+        }
+        if (this.location) {
+            /* tslint:disable */
             headers['Location'] = this.location;
+        }
         // Add the additionalHeaders to the response
         _.forOwn(this.additionalHeaders, function (value, key) {
             response.setHeader(key, value);
         });
         // Add the cookies set to the header (pass the full array to allow writing multiple cookies)
-        if (this.cookiesData)
+        if (this.cookiesData) {
             response.setHeader('Set-Cookie', (this.cookiesData));
+        }
         response.writeHead(this.httpCode, headers);
         if (this.bodyData) {
             response.write(this.bodyData);
-            if (this.bodyData.length > 1024)
+            if (this.bodyData.length > 1024) {
                 log.info('Sending %s Kb (as %s)', Math.round(this.bodyData.length / 1024), this.mimeType);
-            else
+            }
+            else {
                 log.info('Sending %s bytes (as %s)', this.bodyData.length, this.mimeType);
+            }
             response.end();
             log.info('<< REQUEST: Complete');
         }
@@ -391,7 +423,7 @@ exports.Embodiment = Embodiment;
 /**
  * Root object for the application is the Site.
  * The site is in itself a Resource and is accessed via the root / in a url.
-*/
+ */
 var Site = (function (_super) {
     __extends(Site, _super);
     function Site(siteName, parent) {
@@ -401,7 +433,7 @@ var Site = (function (_super) {
         this._siteName = 'site';
         this._home = '/';
         this._pathCache = {};
-        this._errorView = null;
+        this._errorView = undefined;
         this._allowCors = false;
         this._filters = {};
         this.enableFilters = false;
@@ -416,8 +448,8 @@ var Site = (function (_super) {
         }
     }
     Site.$ = function (name) {
-        if (Site._instance === null || name) {
-            Site._instance = null;
+        if (Site._instance === undefined || name) {
+            Site._instance = undefined;
             Site._instance = new Site(name ? name : 'site');
         }
         return Site._instance;
@@ -506,13 +538,13 @@ var Site = (function (_super) {
         var mimeType = format.split(/[\s,]+/)[0];
         var errCode = error.getHttpCode ? error.getHttpCode() : 500;
         var errObj = {
-            version: version,
-            result: 'error',
             error: {
-                name: error.name,
                 message: error.message,
+                name: error.name,
                 stack: error.stack.split('\n')
-            }
+            },
+            result: 'error',
+            version: version
         };
         switch (mimeType) {
             case 'text/html':
@@ -604,8 +636,9 @@ var Site = (function (_super) {
             .then(function (dataArr) {
             var filterData = {};
             _.each(_.keys(self._filters), function (name, i) {
-                if (dataArr[i])
+                if (dataArr[i]) {
                     filterData[name] = dataArr[i];
+                }
             });
             log.info("all " + dataArr.length + " filters passed ");
             later.resolve(filterData);
@@ -619,7 +652,7 @@ var Site = (function (_super) {
     /**
      * Serve this site. This call creates a Server for the site and manage all the requests
      * by routing them to the appropriate resources.
-    */
+     */
     Site.prototype.serve = function () {
         var _this = this;
         var self = this;
@@ -667,15 +700,17 @@ var Site = (function (_super) {
                     reply.serve(response);
                 })
                     .fail(function (error) {
-                    if (error.httpCode >= 300)
+                    if (error.httpCode >= 300) {
                         log.error("HTTP " + msg.method + " failed : " + error.httpCode + " : " + error.name + " - " + error.message);
+                    }
                     self._outputError(response, error, route.outFormat);
                 })
                     .done();
             })
                 .fail(function (error) {
-                if (error.httpCode >= 300)
+                if (error.httpCode >= 300) {
                     log.error("HTTP " + msg.method + " failed : " + error.httpCode + " : " + error.name + " - " + error.message);
+                }
                 self._outputError(response, error, route.outFormat);
             });
         }); // End http.createServer()
@@ -730,7 +765,6 @@ var Site = (function (_super) {
         var self = this;
         var log = internals.log().child({ func: 'Site.get' });
         log.info('route: %s', route.pathname);
-        //log.info(' FORMAT: %s', route.outFormat);
         if (route.static) {
             return internals.viewStatic(decodeURI(route.pathname), route.headers);
         }
@@ -762,8 +796,9 @@ var Site = (function (_super) {
         var log = internals.log().child({ func: 'Site.post' });
         if (route.path.length > 1) {
             var direction = self._getDirection(route, 'POST');
-            if (!direction)
+            if (!direction) {
                 return internals.promiseError(internals.format('[error] Resource not found or invalid in request "{0}"', route.pathname), route.pathname);
+            }
             var res = (direction.resource);
             log.info('POST on resource "%s"', res.name);
             route.path = direction.route.path;
@@ -781,8 +816,9 @@ var Site = (function (_super) {
         var log = internals.log().child({ func: 'Site.patch' });
         if (route.path.length > 1) {
             var direction = self._getDirection(route, 'PATCH');
-            if (!direction)
+            if (!direction) {
                 return internals.promiseError(internals.format('[error] Resource not found or invalid in request "{0}"', route.pathname), route.pathname, 404);
+            }
             var res = (direction.resource);
             log.info('PATCH on resource "%s"', res.name);
             route.path = direction.route.path;
@@ -800,8 +836,9 @@ var Site = (function (_super) {
         var self = this;
         if (route.path.length > 1) {
             var direction = self._getDirection(route, 'PUT');
-            if (!direction)
+            if (!direction) {
                 return internals.promiseError(internals.format('[error] Resource not found or invalid in request "{0}"', route.pathname), route.pathname, 404);
+            }
             var res = (direction.resource);
             log.info('PUT on resource "%s"', res.name);
             route.path = direction.route.path;
@@ -816,14 +853,15 @@ var Site = (function (_super) {
     Site.prototype.delete = function (route, body, filterData) {
         if (filterData === void 0) { filterData = {}; }
         var self = this;
-        var ctx = '[' + this.name + '.delete] ';
+        var ctx = "[" + this.name + ".delete] ";
         if (route.static) {
             return internals.promiseError('DELETE not supported on static resources', route.pathname);
         }
         if (route.path.length > 1) {
             var direction = self._getDirection(route, 'DELETE');
-            if (!direction)
+            if (!direction) {
                 return internals.promiseError(internals.format('{0} [error] Resource not found or invalid in request "{1}"', ctx, route.pathname), route.pathname, 404);
+            }
             var res = (direction.resource);
             internals.log().info('%s "%s"', ctx, res.name);
             route.path = direction.route.path;
@@ -831,7 +869,7 @@ var Site = (function (_super) {
         }
         return internals.promiseError(internals.format('[error] Invalid DELETE request "{0}"', route.pathname), route.pathname, 404);
     };
-    Site._instance = null;
+    Site._instance = undefined;
     return Site;
 })(Container);
 exports.Site = Site;
@@ -839,7 +877,7 @@ exports.Site = Site;
  * ResourcePlayer absorbs a user defined resource and execute the HTTP requests.
  * The player dispatch requests to the childres resources or invoke user defined
  * response function for each verb.
-*/
+ */
 var ResourcePlayer = (function (_super) {
     __extends(ResourcePlayer, _super);
     // public data = {};
@@ -848,6 +886,7 @@ var ResourcePlayer = (function (_super) {
      */
     function ResourcePlayer(res, parent) {
         _super.call(this, parent);
+        // private _site: Site;
         this._template = '';
         this._parameters = {};
         this.filtersData = {};
@@ -901,7 +940,7 @@ var ResourcePlayer = (function (_super) {
         if (generateError === void 0) { generateError = true; }
         var log = internals.log().child({ func: this.name + '._readParameters' });
         var counter = 0;
-        _.each(this._paramterNames, function (parameterName, idx, list) {
+        _.each(this._paramterNames, function (parameterName, idx /*, list*/) {
             if (!path[idx + 1]) {
                 if (generateError) {
                     log.error('Could not read all the required paramters from URI. Read %d, needed %d', counter, _this._paramterNames.length);
@@ -922,7 +961,7 @@ var ResourcePlayer = (function (_super) {
         var self = this;
         self.data = {};
         _.each(newData, function (value, attrname) {
-            if (attrname != 'resources') {
+            if (attrname !== 'resources') {
                 self.data[attrname] = value;
             }
         });
@@ -943,7 +982,7 @@ var ResourcePlayer = (function (_super) {
         log.info('Formats: %s', JSON.stringify(mimeTypes));
         // Use the template for GET html requests
         if (self._template &&
-            (mimeTypes.indexOf('text/html') != -1 || mimeTypes.indexOf('*/*') != -1)) {
+            (mimeTypes.indexOf('text/html') !== -1 || mimeTypes.indexOf('*/*') !== -1)) {
             // Here we copy the data into the resource itself and process it through the viewing engine.
             // This allow the code in the view to act in the context of the resourcePlayer.
             self.data = resResponse.data;
@@ -962,22 +1001,22 @@ var ResourcePlayer = (function (_super) {
         else {
             var mimeType = undefined;
             // This is orrible, it should be improved in version 0.1.3
-            if (mimeTypes.indexOf('*/*') != -1) {
+            if (mimeTypes.indexOf('*/*') !== -1) {
                 mimeType = 'application/json';
             }
-            if (mimeTypes.indexOf('application/json') != -1) {
+            if (mimeTypes.indexOf('application/json') !== -1) {
                 mimeType = 'application/json';
             }
-            if (mimeTypes.indexOf('application/xml') != -1) {
+            if (mimeTypes.indexOf('application/xml') !== -1) {
                 mimeType = 'application/xml';
             }
-            if (mimeTypes.indexOf('text/xml') != -1) {
+            if (mimeTypes.indexOf('text/xml') !== -1) {
                 mimeType = 'text/xml';
             }
-            if (mimeTypes.indexOf('application/xhtml+xml') != -1) {
+            if (mimeTypes.indexOf('application/xhtml+xml') !== -1) {
                 mimeType = 'application/xml';
             }
-            if (mimeTypes.indexOf('application/x-www-form-urlencoded') != -1) {
+            if (mimeTypes.indexOf('application/x-www-form-urlencoded') !== -1) {
                 mimeType = 'text/xml';
             }
             if (mimeType) {
@@ -1010,9 +1049,8 @@ var ResourcePlayer = (function (_super) {
     // -------------------- HTTP VERB FUNCIONS -------------------------------------
     /**
      * Resource Player HEAD. Get the response as for a GET request, but without the response body.
-    */
+     */
     ResourcePlayer.prototype.head = function (route, filtersData) {
-        var self = this; // use to consistently access this object.
         var later = Q.defer();
         this.resetOutgoingCookies();
         _.defer(function () { later.reject(new RxError('Not Implemented')); });
@@ -1021,7 +1059,7 @@ var ResourcePlayer = (function (_super) {
     /**
      * HttpPlayer GET. Analyze the route and redirect the call to a child resource or
      * will call the onGet() for the this resource.
-    */
+     */
     ResourcePlayer.prototype.get = function (route, filtersData) {
         var self = this; // use to consistently access this object.
         var log = internals.log().child({ func: 'ResourcePlayer(' + self.name + ').get' });
@@ -1036,10 +1074,12 @@ var ResourcePlayer = (function (_super) {
                 return res.get(direction.route, filtersData);
             }
             else {
-                if (_.keys(self._resources).length === 0)
+                if (_.keys(self._resources).length === 0) {
                     return internals.promiseError(internals.format('[error: no child] This resource "{0}" does not have any child resource to navigate to. Path= "{1}"', self.name, JSON.stringify(route.path)), route.pathname);
-                else
+                }
+                else {
                     return internals.promiseError(internals.format('[error: no such child] ResourcePlayer GET could not find a Resource for "{0}"', JSON.stringify(route.path)), route.pathname);
+                }
             }
         }
         // 2 - Read the parameters from the route
@@ -1051,9 +1091,9 @@ var ResourcePlayer = (function (_super) {
             }
         }
         // Set the cach to invoke this resource for this path directly next time
-        site().setPathCache(route.pathname, { resource: this, path: route.path });
+        site().setPathCache(route.pathname, { path: route.path, resource: this });
         // This is the resource that need to answer either with a onGet or directly with data
-        var dyndata = {};
+        // var dyndata: any = {};
         // If the onGet() is defined use id to get dynamic data from the user defined resource.
         if (self._onGet) {
             log.info('Invoking GET on %s (%s)', self.name, route.outFormat);
@@ -1076,14 +1116,18 @@ var ResourcePlayer = (function (_super) {
         }
         // 4 - Perform the default GET that is: deliver the data associated with this resource
         log.info('Returning static data from %s', self.name);
-        var responseObj = { result: 'ok', httpCode: 200, data: self.data };
+        var responseObj = {
+            data: self.data,
+            httpCode: 200,
+            result: 'ok'
+        };
         self._deliverReply(later, responseObj, self._outFormat ? self._outFormat : route.outFormat);
         return later.promise;
     };
     /**
      * HttpPlayer DELETE. Analyze the route and redirect the call to a child resource or
      * will call the onGet() for the this resource.
-    */
+     */
     ResourcePlayer.prototype.delete = function (route, filtersData) {
         var self = this; // use to consistently access this object.
         var log = internals.log().child({ func: 'ResourcePlayer(' + self.name + ').delete' });
@@ -1133,8 +1177,12 @@ var ResourcePlayer = (function (_super) {
         // 4 - Perform the default DELETE that is: delete this resource
         log.info('Default Delete: Removing resource %s', self.name);
         self.parent.remove(self);
-        self.parent = null;
-        var responseObj = { result: 'ok', httpCode: 200, data: self.data };
+        self.parent = undefined;
+        var responseObj = {
+            data: self.data,
+            httpCode: 200,
+            result: 'ok',
+        };
         self._deliverReply(later, responseObj, self._outFormat ? self._outFormat : route.outFormat);
         return later.promise;
     };
@@ -1143,7 +1191,7 @@ var ResourcePlayer = (function (_super) {
      * will call the onPost() for the this resource.
      * The default action is to create a new subordinate of the web resource identified by the URI.
      * The body sent to a post must contain the resource name to be created.
-    */
+     */
     ResourcePlayer.prototype.post = function (route, body, filtersData) {
         var self = this; // use to consistently access this object.
         var log = internals.log().child({ func: 'ResourcePlayer(' + self.name + ').post' });
@@ -1190,7 +1238,11 @@ var ResourcePlayer = (function (_super) {
         // 4 - Perform the default POST that is: set the data directly
         log.info('Adding data for %s', self.name);
         self._updateData(body);
-        var responseObj = { result: 'ok', httpCode: 200, data: self.data };
+        var responseObj = {
+            data: self.data,
+            httpCode: 200,
+            result: 'ok',
+        };
         self._deliverReply(later, responseObj, self._outFormat ? self._outFormat : route.outFormat);
         return later.promise;
     };
@@ -1198,7 +1250,7 @@ var ResourcePlayer = (function (_super) {
      * HttpPlayer POS. Analyze the route and redirect the call to a child resource or
      * will call the onPost() for the this resource.
      * The default action is to apply partial modifications to a resource (as identified in the URI).
-    */
+     */
     ResourcePlayer.prototype.patch = function (route, body, filtersData) {
         var self = this; // use to consistently access this object.
         var log = internals.log().child({ func: 'ResourcePlayer(' + self.name + ').patch' });
@@ -1248,7 +1300,11 @@ var ResourcePlayer = (function (_super) {
         // 4 - Perform the default PATH that is set the data directly
         log.info('Updating data for %s', self.name);
         self._updateData(body);
-        var responseObj = { result: 'ok', httpCode: 200, data: self.data };
+        var responseObj = {
+            data: self.data,
+            httpCode: 200,
+            result: 'ok',
+        };
         self._deliverReply(later, responseObj, self._outFormat ? self._outFormat : route.outFormat);
         return later.promise;
     };
@@ -1258,8 +1314,8 @@ var ResourcePlayer = (function (_super) {
      * The body sent to a post does not contain the resource name to be stored since that name is the URI.
     */
     ResourcePlayer.prototype.put = function (route, body, filtersData) {
-        var self = this; // use to consistently access this object.
-        var log = internals.log().child({ func: 'ResourcePlayer(' + self.name + ').put' });
+        // const self = this; // use to consistently access this object.
+        // const log = internals.log().child( { func : 'ResourcePlayer(' +self.name+ ').put'} );
         var later = Q.defer();
         this.resetOutgoingCookies();
         _.defer(function () { later.reject(new RxError('Not Implemented')); });
