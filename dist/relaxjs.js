@@ -358,7 +358,12 @@ var Embodiment = (function () {
      * Add headers to this embodiment
      */
     Embodiment.prototype.setAdditionalHeaders = function (headers) {
-        this.additionalHeaders = headers;
+        if (!this.additionalHeaders) {
+            this.additionalHeaders = _.clone(headers);
+        }
+        else {
+            _.merge(this.additionalHeaders, headers);
+        }
     };
     /**
      * Serve this emnbodiment through the given ServerResponse

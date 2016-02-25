@@ -520,7 +520,12 @@ export class Embodiment {
    * Add headers to this embodiment
    */
   setAdditionalHeaders( headers : any ) : void {
-    this.additionalHeaders = headers;
+    if ( !this.additionalHeaders ) {
+      this.additionalHeaders = _.clone(headers);
+    }
+    else {
+      _.merge( this.additionalHeaders, headers );
+    }
   }
 
   /**
