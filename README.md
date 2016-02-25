@@ -13,7 +13,7 @@ You can use relaxjs directly in your Javascript code as well as in your TypeScri
 The following are two basic examples on how to use relaxjs. These are just very basic examples.
 I am writing more samples that shows how to use every aspect of relaxjs in this [repo](https://github.com/micurs/relaxjs-examples)
 
-### Basci use in Javascript
+### In Javascript
 
 The main element of a server created with relaxjs is the resource.
 We add a resource to a site and we give it some data.
@@ -38,7 +38,7 @@ Then start you server:
 node hello_relaxjs.js
 ```
 
-### Typescript
+### In Typescript
 
 The Typescript version of the same example would look like this:
 
