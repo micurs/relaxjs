@@ -1,35 +1,62 @@
 /*
- * Relax.js version 0.1.4
- * by Michele Ursino - 2015
+ * Relax.js Route utility class
+ * by Michele Ursino - 2015, 2016
  */
-var url = require('url');
-var path = require('path');
-var _ = require("lodash");
-// Route: helper class to routing requests to the correct resource
-var Route = (function () {
-    function Route(uri, outFormat, inFormat) {
-        this.static = true; // if true it means this rout is mapping to a file
+"use strict";
+const url = require('url');
+const path = require('path');
+const _ = require('lodash');
+/**
+ * Route: helper class to routing requests to the correct resource
+ * @export
+ * @class Route
+ */
+class Route {
+    /**
+     * Creates an instance of Route.
+     * @internal
+     * @param {string} [uri] (description)
+     * @param {string} [outFormat] (description)
+     * @param {string} [inFormat] (description)
+     */
+    constructor(uri, outFormat, inFormat) {
+        /**
+         * if true it means this route is mapping to a file
+         *
+         * @type {boolean}
+         */
+        this.static = true;
+        /**
+         * Headers associated with the request
+         * @internal
+         * @type {relaxjs.ResponseHeaders}
+         */
         this.headers = {}; // Additional headers filters or resources may set before returning an answer.
         if (uri) {
-            var parsedUrl = url.parse(uri, true);
-            var extension = path.extname(parsedUrl.pathname);
-            var resources = parsedUrl.pathname.split('/'); //.splice(0,1);
-            if (parsedUrl.pathname.charAt(0) == '/') {
+            const parsedUrl = url.parse(uri, true);
+            const extension = path.extname(parsedUrl.pathname);
+            let resources = parsedUrl.pathname.split('/');
+            if (parsedUrl.pathname.charAt(0) === '/') {
                 resources.unshift('site');
             }
-            resources = _.map(resources, function (item) { return decodeURI(item); });
+            resources = _.map(resources, (item) => decodeURI(item));
             this.pathname = parsedUrl.pathname;
             this.query = parsedUrl.query;
-            this.path = _.filter(resources, function (res) { return res.length > 0; });
-            // console.log(_.str.sprintf('Route Path:"%s" Extension:"%s"', JSON.stringify(this.path), extension ) );
+            this.path = _.filter(resources, (res) => res.length > 0);
             this.static = (extension.length > 0);
             this.outFormat = outFormat ? outFormat : 'application/json';
             this.inFormat = inFormat ? inFormat : 'application/json';
         }
     }
-    // Create a new Route with a new path without the first item
-    Route.prototype.stepThrough = function (stpes) {
-        var newRoute = new Route();
+    //
+    /**
+     * Create a new Route with a new path without the first item
+     * @internal
+     * @param {number} stpes (description)
+     * @returns {Route} (description)
+     */
+    stepThrough(stpes) {
+        const newRoute = new Route();
         _.assign(newRoute, {
             verb: this.verb,
             static: this.static,
@@ -42,32 +69,44 @@ var Route = (function () {
             request: this.request,
             response: this.response
         });
-        newRoute.path = _.map(this.path, function (v) { return _.clone(v); });
+        newRoute.path = _.map(this.path, v => _.clone(v));
         newRoute.path.splice(0, stpes);
         return newRoute;
-    };
-    Route.prototype.getNextStep = function () {
+    }
+    /**
+     * (description)
+     * @internal
+     * @returns {string} (description)
+     */
+    getNextStep() {
         // console.log('[Route.nextStep] '+this.path[0] );
         return this.path[0];
-    };
-    Route.prototype.addResponseHeaders = function (h) {
+    }
+    /**
+     * Add new headers to this route
+     * @internal
+     * @param {relaxjs.ResponseHeaders} h (description)
+     */
+    addResponseHeaders(h) {
         _.merge(this.headers, h);
-    };
-    return Route;
-})();
+    }
+}
 exports.Route = Route;
-// --------------------------------------------------------------
-// GET /home/users?id=100
-// becomes
-// home.users.get(100)
-// PUT /home/users?id=100
-// becomes
-//  home.users.put( 100, data)
-// --------------------------------------------------------------
+/**
+ * Create a Route from a request, response couple. For example:
+ *  GET /home/users?id=100  becomes home.users.get(100)
+ *  PUT /home/users?id=100  becomes home.users.put(100, data)
+ * @internal
+ * @export
+ * @param {http.ServerRequest} request (description)
+ * @param {http.ServerResponse} response (description)
+ * @returns {Route} (description)
+ */
 function fromRequestResponse(request, response) {
-    if (!request.url)
+    if (!request.url) {
         request.url = '/';
-    var route = new Route(request.url);
+    }
+    const route = new Route(request.url);
     route.request = request;
     route.response = response;
     // Extract the cookies (if any) from the request
@@ -96,4 +135,5 @@ function fromRequestResponse(request, response) {
     return route;
 }
 exports.fromRequestResponse = fromRequestResponse;
+
 //# sourceMappingURL=routing.js.map

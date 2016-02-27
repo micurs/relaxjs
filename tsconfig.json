@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
-    "declaration": false,
+    "declaration": true,
     "noImplicitAny": false,
-    "removeComments": true,
+    "removeComments": false,
     "noLib": false,
-    "sourcemap": "true",
+    "sourceMap": true,
     "outDir": "dist",
-    "sourceRoot": "../src"
+    "stripInternal": true
   },
   "files": [
     "./src/internals.ts",
     "./src/routing.ts",
     "./src/relaxjs.ts"
-  ]  
+  ]
 }

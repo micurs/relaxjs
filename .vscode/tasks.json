@@ -7,8 +7,7 @@
     {
       "taskName": "default",
       "args": [ "default" ],
-      "isBuildCommand": true,
-      "isWatching": false
+      "isBuildCommand": true
     },
     {
       "taskName": "test",

@@ -2,15 +2,16 @@
  * Relax.js version 0.2.0
  * by Michele Ursino - 2015
 */
-var fs = require('fs');
-var mime = require('mime');
-var Q = require('q');
-var querystring = require('querystring');
-var bunyan = require('bunyan');
-var _ = require("lodash");
-var xml2js = require('xml2js');
-var multiparty = require('multiparty');
-var relaxjs = require('./relaxjs');
+"use strict";
+const fs = require('fs');
+const mime = require('mime');
+const Q = require('q');
+const querystring = require('querystring');
+const bunyan = require('bunyan');
+const _ = require("lodash");
+const xml2js = require('xml2js');
+const multiparty = require('multiparty');
+const relaxjs = require('./relaxjs');
 var _log;
 var _appName;
 var _multipOptions = {};
@@ -42,11 +43,7 @@ function setMultipartDataTempDir(path) {
     _multipOptions.uploadDir = path;
 }
 exports.setMultipartDataTempDir = setMultipartDataTempDir;
-function format(source) {
-    var args = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        args[_i - 1] = arguments[_i];
-    }
+function format(source, ...args) {
     return source.replace(/{(\d+)}/g, function (match, n) {
         return typeof args[n] != 'undefined'
             ? args[n]
@@ -143,8 +140,7 @@ exports.emitCompileViewError = emitCompileViewError;
 /*
  * Creates a RxError object with the given message and resource name
  */
-function emitError(content, resname, errcode) {
-    if (errcode === void 0) { errcode = 500; }
+function emitError(content, resname, errcode = 500) {
     var errTitle = format('Error serving: {0}', resname);
     var errMsg = content;
     _log.error(errTitle);
@@ -154,10 +150,9 @@ exports.emitError = emitError;
 /*
  * Emits a promise for a failure message
 */
-function promiseError(msg, resName, errcode) {
-    if (errcode === void 0) { errcode = 500; }
+function promiseError(msg, resName, errcode = 500) {
     var later = Q.defer();
-    _.defer(function () {
+    _.defer(() => {
         _log.error(msg);
         later.reject(emitError(msg, resName, errcode));
     });
@@ -169,7 +164,7 @@ exports.promiseError = promiseError;
 */
 function redirect(location) {
     var later = Q.defer();
-    _.defer(function () {
+    _.defer(() => {
         _log.info('Sending a Redirect 307 towards %s', location);
         var redir = new relaxjs.Embodiment('text/html');
         redir.httpCode = 307; // Temporary Redirect (since HTTP/1.1)
@@ -183,8 +178,7 @@ exports.redirect = redirect;
  * Realize a view from a generic get for a static file
  * Return a promise that will return the full content of the view.
 */
-function viewStatic(filename, headers) {
-    if (headers === void 0) { headers = {}; }
+function viewStatic(filename, headers = {}) {
     var fname = '[view static]';
     var log = _log.child({ func: 'internals.viewStatic' });
     var mtype = mime.lookup(filename);
@@ -193,11 +187,11 @@ function viewStatic(filename, headers) {
     log.info('serving %s', staticFile);
     if (!fs.existsSync(staticFile)) {
         log.warn('File "%s" not found', staticFile);
-        laterAction.reject(new relaxjs.RxError("File " + filename + " not found", 'File Not Found', 404));
+        laterAction.reject(new relaxjs.RxError(`File ${filename} not found`, 'File Not Found', 404));
     }
     else {
-        fs.stat(staticFile, function (err, stats) {
-            log.info("Sreaming " + staticFile);
+        fs.stat(staticFile, (err, stats) => {
+            log.info(`Sreaming ${staticFile}`);
             headers['content-length'] = stats.size.toString();
             var readStream = fs.createReadStream(staticFile);
             var reply = new relaxjs.Embodiment(mtype, 200, readStream);
@@ -231,7 +225,7 @@ function createEmbodiment(viewData, mimeType) {
     var later = Q.defer();
     var resourceName = 'resource';
     log.info('Creating Embodiment as %s', mimeType);
-    _.defer(function () {
+    _.defer(() => {
         try {
             // 1 Copy the public properties and _name to a destination object for serialization.
             var destObj = {};
@@ -284,14 +278,14 @@ function viewDynamic(viewName, viewData, layoutName) {
     var readFile = Q.denodeify(fs.readFile);
     var templateFilename = './views/' + viewName + '._';
     if (viewName === 'site') {
-        templateFilename = __dirname + "/../views/" + viewName + "._";
+        templateFilename = `${__dirname}/../views/${viewName}._`;
     }
     if (layoutName) {
         var layoutFilename = './views/' + layoutName + '._';
         log.info('Reading template %s in layout %s', templateFilename, layoutFilename);
         Q.all([readFile(templateFilename, { 'encoding': 'utf8' }),
             readFile(layoutFilename, { 'encoding': 'utf8' })])
-            .spread(function (content, outerContent) {
+            .spread((content, outerContent) => {
             try {
                 log.info('Compile composite view %s in %s', templateFilename, layoutFilename);
                 var innerContent = new Buffer(_.template(content)(viewData), 'utf-8');
@@ -303,7 +297,7 @@ function viewDynamic(viewName, viewData, layoutName) {
                 laterAct.reject(emitCompileViewError(content, err, templateFilename + ' in ' + layoutFilename));
             }
         })
-            .catch(function (err) {
+            .catch((err) => {
             log.error(err);
             laterAct.reject(emitCompileViewError('N/A', err, templateFilename + ' in ' + layoutFilename));
         });
@@ -311,7 +305,7 @@ function viewDynamic(viewName, viewData, layoutName) {
     else {
         log.info('Reading template %s', templateFilename);
         readFile(templateFilename, { 'encoding': 'utf8' })
-            .then(function (content) {
+            .then((content) => {
             try {
                 log.info('Compiling view %s', templateFilename);
                 var fullContent = new Buffer(_.template(content)(viewData), 'utf-8');
@@ -322,7 +316,7 @@ function viewDynamic(viewName, viewData, layoutName) {
                 laterAct.reject(emitCompileViewError(content, err, templateFilename));
             }
         })
-            .catch(function (err) {
+            .catch((err) => {
             log.error(err);
             laterAct.reject(emitCompileViewError('N/A', err, templateFilename));
         });
@@ -330,4 +324,5 @@ function viewDynamic(viewName, viewData, layoutName) {
     return laterAct.promise;
 }
 exports.viewDynamic = viewDynamic;
+
 //# sourceMappingURL=internals.js.map

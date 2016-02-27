@@ -25,29 +25,36 @@ const packageinfo : any = require( __dirname + '/../package.json');
 const version : string = packageinfo.version;
 /* tslint:enable */
 
+/**
+ * print out the version
+ *
+ * @export
+ */
 export function relaxjs() : void {
   console.log(`relaxjs version ${version}`);
 }
 
-/*
+/**
  * A Resource map is a collection of Resource arrays.
  * Each arrray contain resource of the same type.
+ * @internal
 */
 export interface ResourceMap {
   [name : string] : Container [];
 }
 
-/*
+/**
  * Response headers as strings indexed by the header name
-*/
+ */
 export interface ResponseHeaders {
   [ headerName : string ] : string;
 }
 
-/*
+/**
  * Response definition: every resource generate an instance of ResourceResponse.
  * This is generated automatically from a resource by calling a response function:
  * ok(), fail() or redirect() from a resource response function.
+ * @internal
 */
 export interface ResourceResponse {
   result : string;
@@ -58,11 +65,18 @@ export interface ResourceResponse {
   headers? : ResponseHeaders;
 }
 
+/**
+ * Filter complete function definition.
+ * This is called to complete a filter with error or data to pass to a resource
+ *
+ * @export
+ * @interface FilterResultCB
+ */
 export interface FilterResultCB {
   ( err? : RxError, data? : any ) : void;
 }
 
-/*
+/**
  * A filter function is called on every request and can stop the dispatch of the request to the
  * target resource. The call is asyncronous. When complete it must call the complete function
  * passed as third argument.
@@ -76,14 +90,15 @@ export interface RequestFilter {
   ( route : routing.Route, body : any, complete : FilterResultCB ) : any ;
 }
 
-/*
+/**
  * Definition for Collection of filters
+ * @internal
 */
 interface RequestFilterDict {
   [ name : string ] : RequestFilter;
 }
 
-/*
+/**
  * Data produced from the filters functions are available using the filter name as index
 */
 export interface FiltersData {
@@ -91,58 +106,180 @@ export interface FiltersData {
 }
 
 
-/*
+/**
  * The resource HttpPlayer implement the resource runtime capabilities.
  * Classes implementing HttpPlayers must implement HTTP verb functions defined here.
-*/
+ * @export
+ * @interface HttpPlayer
+ */
 export interface HttpPlayer {
   name : string;
   urlName : string;
 
-  // Asks for the response identical to the one that would correspond to a GET request, but without the response body.
+  /**
+   * Asks for the response identical to the one that would correspond to a GET request, but without the response body.
+   * @internal
+   * @param {routing.Route} route (description)
+   * @param {FiltersData} filtersData (description)
+   * @returns {Q.Promise<Embodiment>} (description)
+   */
   head( route : routing.Route, filtersData : FiltersData) : Q.Promise<Embodiment> ;
 
-  // Requests a representation of the specified resource.
+  //
+  /**
+   * A GET requests returns a representation of the specified resource.
+   * @internal
+   * @param {routing.Route} route (description)
+   * @param {FiltersData} filtersData (description)
+   * @returns {Q.Promise<Embodiment>} (description)
+   */
   get( route : routing.Route, filtersData : FiltersData ) : Q.Promise<Embodiment> ;
 
-  // Requests that the server accept the entity enclosed in the request as a new subordinate
-  // of the web resource identified by the URI.
+  /**
+   * A POST requests add new subordinate of the web resource identified by the URI.
+   * @internal
+   * @param {routing.Route} route (description)
+   * @param {*} body (description)
+   * @param {FiltersData} filtersData (description)
+   * @returns {Q.Promise<Embodiment>} (description)
+   */
   post( route : routing.Route, body : any, filtersData : FiltersData ) : Q.Promise<Embodiment> ;
 
-  // Requests that the enclosed entity be stored under the supplied URI.
-  // If the URI refers to an already existing resource, it is modified otherwise the resource can be created.
+  /**
+   * A PUT requests that the enclosed entity be stored under the supplied URI.
+   * If the URI refers to an already existing resource, it is modified otherwise the resource can be created.
+   * @internal
+   * @param {routing.Route} route (description)
+   * @param {*} body (description)
+   * @param {FiltersData} filtersData (description)
+   * @returns {Q.Promise<Embodiment>} (description)
+   */
   put( route : routing.Route, body : any, filtersData : FiltersData ) : Q.Promise<Embodiment> ;
 
-  // Deletes the specified resource.
+  //
+  /**
+   * A Delete request deletes the specified resource.
+   * @internal
+   * @param {routing.Route} route (description)
+   * @param {FiltersData} filtersData (description)
+   * @returns {Q.Promise<Embodiment>} (description)
+   */
   delete( route : routing.Route, filtersData : FiltersData ) : Q.Promise<Embodiment> ;
 
-  // Applies partial modifications to a resource.
+  /**
+   * A PATCH request applies partial modifications to a resource.
+   * @internal
+   * @param {routing.Route} route (description)
+   * @param {*} body (description)
+   * @param {FiltersData} filtersData (description)
+   * @returns {Q.Promise<Embodiment>} (description)
+   */
   patch( route : routing.Route, body : any, filtersData : FiltersData ) : Q.Promise<Embodiment> ;
 }
 
-/*
+/**
  * This is the definition for a Resource as passed to a Site object.
-*/
+ *
+ * @export
+ * @interface Resource
+ */
 export interface Resource {
+  /**
+   * (description)
+   *
+   * @type {string}
+   */
   name : string;
+  /**
+   * (description)
+   *
+   * @type {string}
+   */
   key? : string;
+  /**
+   * (description)
+   *
+   * @type {string}
+   */
   view? : string;
+  /**
+   * (description)
+   *
+   * @type {string}
+   */
   layout? : string;
+  /**
+   * (description)
+   *
+   * @type {*}
+   */
   data? : any;
+  /**
+   * (description)
+   *
+   * @type {Resource[]}
+   */
   resources? : Resource[];
+  /**
+   * (description)
+   *
+   * @type {string[]}
+   */
   urlParameters? : string[];
+  /**
+   * the mime type of the response generated from this resource
+   *
+   * @type {string}
+   */
   outFormat? : string;
+  /**
+   * Additional headers to generate in the responses from this resource
+   *
+   * @type {ResponseHeaders}
+   */
   headers? : ResponseHeaders;
+  /**
+   * not yet available
+   * @internal
+   * @type {( query : any, respond : Response ) => void}
+   */
   onHead? : ( query : any, respond : Response ) => void;
+  /**
+   * Function to call upon receiving of a GET request
+   *
+   * @type {( query : any, respond : Response ) => void}
+   */
   onGet? : ( query : any, respond : Response ) => void;
+  /**
+   * Function to call upon receiving of a POST request
+   *
+   * @type {( query : any, body : any, respond : Response) => void}
+   */
   onPost? : ( query : any, body : any, respond : Response) => void;
+  /**
+   * Function to call upon receiving of a PUT request
+   * not yet implemented
+   * @internal
+   * @type {( query : any, body : any, respond : Response) => void}
+   */
   onPut? : ( query : any, body : any, respond : Response) => void;
+  /**
+   * Function to call upon receiving of a DELETE request
+   *
+   * @type {( query : any, respond : Response ) => void}
+   */
   onDelete? : ( query : any, respond : Response ) => void;
+  /**
+   * Function to call upon receiving of a PATCH request
+   *
+   * @type {( query : any, body : any, respond : Response) => void}
+   */
   onPatch? : ( query : any, body : any, respond : Response) => void;
 }
 
-/*
+/**
  * Standard node Error: type declaration
+ * @internal
 */
 export declare class Error {
     public name : string;
@@ -151,17 +288,50 @@ export declare class Error {
     constructor(message? : string);
 }
 
-/*
+/**
  * Extended Error class for Relax.js
 */
 export class RxError extends Error {
 
+  /**
+   * HTTP error code
+   *
+   * @type {number}
+   */
   public httpCode : number;
+  /**
+   * Extra information about the errror
+   *
+   * @type {string}
+   */
   public extra : string;
+  /**
+   * Error name
+   *
+   * @type {string}
+   */
   public name : string;
+  /**
+   * Error message
+   *
+   * @type {string}
+   */
   public message : string;
+  /**
+   * Call stack at the moment the error was generated
+   *
+   * @type {string}
+   */
   public stack : string;
 
+  /**
+   * Creates an instance of RxError.
+   *
+   * @param {string} message (description)
+   * @param {string} [name] (description)
+   * @param {number} [code] (description)
+   * @param {string} [extra] (description)
+   */
   constructor( message : string, name? : string, code? : number, extra? : string ) {
     super();
     const tmp = new Error(); // We use this to generate the stack info to assign to this error
@@ -171,6 +341,11 @@ export class RxError extends Error {
     this.stack = tmp.stack;
     this.extra = extra;
   }
+  /**
+   * Return the http error code
+   *
+   * @returns {number} (description)
+   */
   getHttpCode() : number {
     return this.httpCode;
   }
@@ -178,74 +353,141 @@ export class RxError extends Error {
     return this.extra ? this.extra : '' ;
   }
 
+  /**
+   * Serialize the error to a string.
+   *
+   * @returns {string} (description)
+   */
   toString() : string {
     return internals.format('RxError {0}: {1}\n{2}\nStack:\n{3}' , this.httpCode, this.name, this.message, this.stack);
   }
 }
 
 
-/*
+/**
  * A container of resources. This class offer helper functions to add and retrieve resources
  * child resources
- * -----------------------------------------------------------------------------------------------------------------------------
 */
 export class Container {
+
+  /** @internal */
   public data : any = {};
+  /** @internal */
   private _parent : Container;
+  /** @internal */
   protected _name : string = '';
+  /** @internal */
   protected _cookiesData : string[] = [];   // Outgoing cookies to be set
+  /** @internal */
   protected _cookies : string[] = [];        // Received cookies unparsed
+  /** @internal */
   protected _resources : ResourceMap = {};
+  /** @internal */
   protected _headers : ResponseHeaders = {};
 
-
+  /**
+   * Creates an instance of Container.
+   *
+   * @param {Container} [parent] (description)
+   */
   constructor( parent? : Container ) {
     this._parent = parent;
   }
 
+  /**
+   * (description)
+   *
+   * @readonly
+   * @type {Container}
+   */
   get parent() : Container {
     return this._parent;
   }
+  /**
+   * (description)
+   *
+   * @readonly
+   * @type {string}
+   */
   get name() : string {
     return this._name;
   }
+  /**
+   * (description)
+   *
+   * @readonly
+   * @type {string}
+   */
   get urlName() : string {
     return internals.slugify(this.name);
   }
 
+  /**
+   * (description)
+   *
+   * @param {string} newName (description)
+   */
   setName( newName : string ) : void {
     this._name = newName;
   }
 
-  // Add the given headers to the one already set
+  /**
+   * Add the given headers to the one already set
+   */
   set headers( h : ResponseHeaders ) {
     const self = this;
     _.forOwn( h, ( value : string, key : string ) => self._headers[key] = value );
   }
 
+  /**
+   * get the headers
+   *
+   * @type {ResponseHeaders}
+   */
   get headers() : ResponseHeaders {
     return this._headers;
   }
 
+  /**
+   * (description)
+   *
+   * @param {string} cookie (description)
+   */
   setCookie( cookie : string ) : void {
     this._cookiesData.push(cookie);
   }
+  /**
+   * (description)
+   *
+   * @returns {string[]} (description)
+   */
   getCookies( ) : string[] {
     return this._cookies;
   }
 
+  /**
+   * Cookies data as a string array
+   *
+   * @readonly
+   * @type {string[]}
+   */
   get cookiesData() : string[] {
     return this._cookiesData;
   }
 
+  /**
+   * (description)
+   * @internal
+   */
   resetOutgoingCookies() : void {
     this._cookiesData = [];
   }
 
 
 
-  /*
+  /**
    * Remove a child resource from this container
+   * @internal
   */
   remove( child : ResourcePlayer ) : boolean {
     const log = internals.log().child( { func : 'Container.remove'} );
@@ -262,13 +504,14 @@ export class Container {
     return true;
   }
 
-  /*
+  /**
    * Inspect the cuurent path in the given route and create the direction
    * to pass a http request to a child resource.
    * If the route.path is terminal this function finds the immediate target resource
    * and assign it to the direction.resource.
    * This function manages also the interpretaiton of an index in the path immediately
    * after the resource name.
+   * @internal
   */
   protected _getStepDirection( route : routing.Route ) : Direction {
     const log = internals.log().child( { func : 'Container.getStepDirection'} );
@@ -302,10 +545,11 @@ export class Container {
   }
 
 
-  /*
+  /**
    * Returns the direction toward the resource in the given route.
    * The Direction object returned may point directly to the resource requested or
    * may point to a resource that will lead to the requested resource
+   * @internal
   */
   protected _getDirection( route : routing.Route, verb : string = 'GET' ) : Direction {
     const log = internals.log().child( { func: 'Container._getDirection'} );
@@ -321,7 +565,7 @@ export class Container {
   }
 
 
-  /*
+  /**
    * Return the resource matching the given path.
   */
   getResource( pathname : string ) : Container {
@@ -346,7 +590,11 @@ export class Container {
   }
 
 
-  // Add a resource of the given type as child
+  /**
+   * Add a resource of the given type as child
+   *
+   * @param {Resource} newRes (description)
+   */
   add( newRes : Resource ) : void {
     const log = internals.log().child( { func : 'Container.add'} );
     /* tslint:disable */
@@ -368,7 +616,12 @@ export class Container {
   }
 
 
-  // Find the first resource of the given type
+  /**
+   * Find the first resource of the given type
+   *
+   * @param {string} typeName (description)
+   * @returns {Container} (description)
+   */
   getFirstMatching( typeName : string ) : Container {
     const childArray = this._resources[typeName];
     if ( childArray === undefined ) {
@@ -378,6 +631,13 @@ export class Container {
   }
 
 
+  /**
+   * Retruieve the child of a resource with the given name
+   *
+   * @param {string} name (description)
+   * @param {number} [idx=0] (description)
+   * @returns {Container} (description)
+   */
   getChild( name : string, idx : number = 0 ) : Container {
     if ( this._resources[name] && this._resources[name].length > idx ) {
       return this._resources[name][idx];
@@ -388,9 +648,12 @@ export class Container {
   }
 
 
-  /*
+  /**
    * Return the number of children resources of the given type.
-  */
+   *
+   * @param {string} typeName (description)
+   * @returns {number} (description)
+   */
   childTypeCount( typeName : string ) : number {
     if ( this._resources[typeName] ) {
       return this._resources[typeName].length;
@@ -401,9 +664,11 @@ export class Container {
   }
 
 
-  /*
+  /**
    * Return the total number of children resources for this node.
-  */
+   *
+   * @returns {number} count result as number
+   */
   childrenCount() : number {
     let counter : number = 0;
     _.each< Container[]>( this._resources, ( arrayItem : Container[] ) => { counter += arrayItem.length; } );
@@ -413,29 +678,49 @@ export class Container {
 }
 
 
-/*
+/**
  * Helper class used to deliver a response from a HTTP verb function call.
  * An instance of this class is passed as argument to all verb functions
- * -----------------------------------------------------------------------------------------------------------------------------
 */
 export class Response {
 
+  /** @internal */
   private _onOk : ( resp : ResourceResponse ) => void;
+  /** @internal */
   private _onFail : ( err : RxError ) => void;
+  /** @internal */
   private _resource : Container;
 
+  /**
+   * Creates an instance of Response.
+   * @internal
+   * @param {Container} resource (description)
+   */
   constructor( resource : Container ) {
     this._resource = resource;
   }
 
+  /**
+   * (description)
+   * @internal
+   * @param {( resp : ResourceResponse ) => void} cb (description)
+   */
   onOk( cb : ( resp : ResourceResponse ) => void ) : void  {
     this._onOk = cb;
   }
+  /**
+   * (description)
+   * @internal
+   * @param {( err : RxError ) => void} cb (description)
+   */
   onFail( cb : ( err : RxError ) => void ) : void  {
     this._onFail = cb;
   }
 
-  // Helper function to call the response callback with a succesful code 'ok'
+  //
+  /**
+   * To return a resource without error invoke this function on the response object receive in the request call
+   */
   ok() : void {
     const respObj : ResourceResponse = {
       cookiesData : this._resource.cookiesData,
@@ -449,7 +734,12 @@ export class Response {
     }
   }
 
-  // Helper function to call the response callback with a redirect code 303
+  /**
+   * Call this function to redirect the caller to a different URL
+   * Code 303
+   *
+   * @param {string} where (description)
+   */
   redirect( where : string ) : void {
     const respObj : ResourceResponse = {
       cookiesData : this._resource.cookiesData,
@@ -463,7 +753,12 @@ export class Response {
     }
   }
 
-  // Helper function to call the response callback with a fail error
+  //
+  /**
+   * Call this function to return an error to the caller
+   *
+   * @param {RxError} err (description)
+   */
   fail( err : RxError ) : void {
     const log = internals.log().child( { func : this._resource.name + '.fail' } );
     log.info('Call failed: %s', err.message );
@@ -474,6 +769,12 @@ export class Response {
 }
 
 
+/**
+ * Routing direction for a request to a resource
+ * @internal
+ * @export
+ * @class Direction
+ */
 export class Direction {
   resource : Container;
   route : routing.Route;
@@ -483,6 +784,7 @@ export class Direction {
 
 /**
  * Every resource is converted to their embodiment before is sent back as a HTTP Response
+ * @internal
  */
 export class Embodiment {
 
@@ -599,47 +901,31 @@ export class Embodiment {
  */
 export class Site extends Container implements HttpPlayer {
 
+  /** @internal */
   private static _instance : Site = undefined;
   // private _name: string = "site";
+  /** @internal */
   private _version : string = version;
+  /** @internal */
   private _siteName : string = 'site';
+  /** @internal */
   private _home : string = '/';
+  /** @internal */
   private _tempDir : string;
+  /** @internal */
   private _pathCache = {};
+  /** @internal */
   private _errorView : string = undefined;
+  /** @internal */
   private _allowCors : boolean = false;
-
+  /** @internal */
   private _filters : RequestFilterDict = {} ;
-  public enableFilters : boolean = false;
 
-  constructor( siteName : string, parent? : Container ) {
-    super(parent);
-    this._siteName = siteName;
-    if ( Site._instance ) {
-      throw new Error('Error: Only one site is allowed.');
-    }
-    Site._instance = this;
-
-    internals.initLog(siteName);
-
-    if ( _.find( process.argv, (arg : string ) => arg === '--relaxjs-verbose' ) ) {
-      internals.setLogVerbose(true);
-    }
-  }
-
-
-  public static $( name? : string ) : Site {
-    if ( Site._instance === undefined || name ) {
-      Site._instance = undefined;
-      Site._instance = new Site( name ? name : 'site' );
-    }
-    return Site._instance;
-  }
-
-  /*
+  /**
    * Returns the direction toward the resource in the given route.
    * The Direction object returned may point directly to the resource requested or
    * may point to a resource that will lead to the requested resource
+   * @internal
   */
   protected _getDirection( route : routing.Route, verb : string = 'GET' ) : Direction {
     const log = internals.log().child( { func : 'Site._getDirection'} );
@@ -666,6 +952,51 @@ export class Site extends Container implements HttpPlayer {
   }
 
   /**
+   * (description)
+   *
+   * @type {boolean}
+   */
+  public enableFilters : boolean = false;
+
+  /**
+   * Creates an instance of Site.
+   *
+   * @param {string} siteName (description)
+   * @param {Container} [parent] (description)
+   */
+  constructor( siteName : string, parent? : Container ) {
+    super(parent);
+    this._siteName = siteName;
+    if ( Site._instance ) {
+      throw new Error('Error: Only one site is allowed.');
+    }
+    Site._instance = this;
+
+    internals.initLog(siteName);
+
+    if ( _.find( process.argv, (arg : string ) => arg === '--relaxjs-verbose' ) ) {
+      internals.setLogVerbose(true);
+    }
+  }
+
+
+  /**
+   * (description)
+   *
+   * @static
+   * @param {string} [name] (description)
+   * @returns {Site} (description)
+   */
+  public static $( name? : string ) : Site {
+    if ( Site._instance === undefined || name ) {
+      Site._instance = undefined;
+      Site._instance = new Site( name ? name : 'site' );
+    }
+    return Site._instance;
+  }
+
+
+  /**
    * Enable positive responses to OPTIONS Preflighted requests in CORS
    */
   public allowCORS( flag : boolean ) : void {
@@ -674,6 +1005,9 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * name of this resource (it should be 'site')
+   *
+   * @readonly
+   * @type {string}
    */
   get name() : string {
     return 'site';
@@ -681,6 +1015,9 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * relaxjs version
+   *
+   * @readonly
+   * @type {string}
    */
   get version() : string {
     return this._version;
@@ -688,6 +1025,9 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * name of this site
+   *
+   * @readonly
+   * @type {string}
    */
   get siteName() : string {
     return this._siteName;
@@ -695,6 +1035,9 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * Setup a shortcut to a specific resource. This function is used internally.
+   * @internal
+   * @param {string} path (description)
+   * @param {{ resource : ResourcePlayer; path : string[] }} shortcut (description)
    */
   setPathCache( path : string, shortcut : { resource : ResourcePlayer; path : string[] } ) : void {
     this._pathCache[path] = shortcut;
@@ -702,12 +1045,22 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * Override the Error output using a custom view.
+   *
+   * @param {string} name (description)
    */
   setErrorView( name : string ) : void {
     this._errorView = name;
   }
 
-  // Output to response the given error following the mime type in format.
+  /**
+   * Output to response the given error following the mime type in format.
+   * @internal
+   * @private
+   * @param {http.ServerResponse} response (description)
+   * @param {RxError} error (description)
+   * @param {string} format (description)
+   * @returns {void} (description)
+   */
   private _outputError( response : http.ServerResponse, error : RxError, format : string ) : void {
     const self = this;
     const log = internals.log().child( { func : 'Site._outputError'} );
@@ -770,6 +1123,9 @@ export class Site extends Container implements HttpPlayer {
    * Add a request filter. The given function will be called on every request
    * before reaching any resource. All request filters must succeed for the
    * request to procees towards a resource.
+   *
+   * @param {string} name (description)
+   * @param {RequestFilter} filterFunction (description)
    */
   addRequestFilter( name : string, filterFunction : RequestFilter ) : void {
     const log = internals.log().child( { func : 'Site.addRequestFilter'} );
@@ -779,6 +1135,9 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * Remove an existing request filter.
+   *
+   * @param {string} name (description)
+   * @returns {boolean} (description)
    */
   deleteRequestFilter( name : string ) : boolean {
     if ( name in this._filters ) {
@@ -791,6 +1150,8 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * Delete ALL request filters associated with this site
+   *
+   * @returns {boolean} (description)
    */
   deleteAllRequestFilters() : boolean {
     this._filters = {};
@@ -799,7 +1160,13 @@ export class Site extends Container implements HttpPlayer {
 
   /*
    * Execute all the active filters, collect their returned data and post all of them in the returned promise.
-  */
+   * @internal
+   * @private
+   * @param {routing.Route} route (description)
+   * @param {*} body (description)
+   * @param {http.ServerResponse} response (description)
+   * @returns {Q.Promise< FiltersData >} (description)
+   */
   private _checkFilters( route : routing.Route, body : any, response : http.ServerResponse ) : Q.Promise< FiltersData > {
     const self = this;
     const log = internals.log().child( { func : 'Site._checkFilters'} );
@@ -839,6 +1206,8 @@ export class Site extends Container implements HttpPlayer {
   /**
    * Serve this site. This call creates a Server for the site and manage all the requests
    * by routing them to the appropriate resources.
+   *
+   * @returns {http.Server} (description)
    */
   serve() : http.Server {
     const self = this;
@@ -908,6 +1277,8 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * Set the Home resource for this site by giving its path
+   *
+   * @param {string} path (description)
    */
   setHome( path : string ) : void {
     this._home = path;
@@ -915,6 +1286,8 @@ export class Site extends Container implements HttpPlayer {
 
   /**
    * Set the given path as location for temporary files produced by POST and PUT operations
+   *
+   * @param {string} path (description)
    */
   setTempDirectory( path : string ) : void {
     this._tempDir = path;
@@ -926,6 +1299,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * HTTP verb HEAD response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
+   * @internal
    */
   head( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
     const self = this;
@@ -952,6 +1326,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * HTTP verb GET response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
+   * @internal
    */
   get( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
     const self = this;
@@ -988,6 +1363,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * HTTP verb POST response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
+   * @internal
    */
   post( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
     const self = this;
@@ -1009,6 +1385,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * HTTP verb PATCH response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
+   * @internal
    */
   patch( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise<Embodiment> {
     const self = this;
@@ -1030,6 +1407,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * HTTP verb PUT response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
+   * @internal
    */
   put( route : routing.Route, body : any, filterData : FiltersData = {}  ) : Q.Promise<Embodiment> {
     const log = internals.log().child( { func : 'Site.put'} );
@@ -1051,6 +1429,7 @@ export class Site extends Container implements HttpPlayer {
   /**
    * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
+   * @internal
    */
   delete( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise<Embodiment> {
     const self = this;
@@ -1079,6 +1458,7 @@ export class Site extends Container implements HttpPlayer {
  * ResourcePlayer absorbs a user defined resource and execute the HTTP requests.
  * The player dispatch requests to the childres resources or invoke user defined
  * response function for each verb.
+ * @internal
  */
 export class ResourcePlayer extends Container implements HttpPlayer {
 
@@ -1569,6 +1949,13 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
 }
 
+/**
+ * (description)
+ *
+ * @export
+ * @param {string} [name] (description)
+ * @returns {Site} (description)
+ */
 export function site( name? : string ) : Site {
   return Site.$(name);
 }
