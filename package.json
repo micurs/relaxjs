@@ -1,6 +1,6 @@
 {
   "name": "relaxjs",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A library written in Typescript to build real RESTful webservices in node.js",
   "author": {
     "name": "Michele Ursino",
@@ -43,7 +43,9 @@
     "readme.md",
     "gulpfile.js",
     "LICENSE",
-    "tsd.json"
+    "tsd.json",
+    "tslint.json",
+    "tsconfig.json"
   ],
   "preferGlobal": false,
   "dependencies": {
