@@ -46,7 +46,7 @@ gulp.task('relaxjs', function(){
         .on('error', showsTscError );
 
   return merge([
-    res.dts.pipe( gulp.dest('./dist/typings') ),
+    res.dts.pipe( gulp.dest('./dist') ),
     res.js
       .pipe( sourcemaps.write('.') )
       .pipe( gulp.dest('./dist') )
@@ -60,10 +60,11 @@ gulp.task('relaxjs', function(){
 
 var dts_bundle_options = {
   name: 'relaxjs',
-  main: './dist/typings/relaxjs.d.ts',
+  main: './dist/relaxjs.d.ts',
   indent: ' ',
-  baseDir: './dist/typings',
+  baseDir: './dist',
   out: 'relaxjs.d.ts',
+  removeSource: true,
   emitOnIncludedFileNotFound: true,
   emitOnNoIncludedFileNotFound: true,
   exclude: function( file, external ) {

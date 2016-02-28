@@ -24,9 +24,8 @@
     "resource",
     "framework"
   ],
-  "typings" : "dist/typings/relaxjs.d.ts",
   "typescript": {
-    "definition": "dist/typings/relaxjs.d.ts"
+    "definition": "dist/relaxjs.d.ts"
   },
   "scripts": {
     "build": "tsc -p .",

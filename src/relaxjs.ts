@@ -432,6 +432,15 @@ export class Container {
   }
 
   /**
+   * Detach this resource from its parent
+   * @internal
+   */
+  detachFromParent(): void {
+    this._parent = undefined;
+  }
+
+
+  /**
    * Add the given headers to the one already set
    */
   set headers( h : ResponseHeaders ) {
@@ -1786,7 +1795,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
     // 4 - Perform the default DELETE that is: delete this resource
     log.info('Default Delete: Removing resource %s', self.name );
     self.parent.remove(self);
-    self.parent = undefined;
+    self.detachFromParent();
     const responseObj : ResourceResponse = {
       data : self.data,
       httpCode : 200,

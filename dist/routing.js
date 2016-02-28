@@ -3,15 +3,15 @@
  * by Michele Ursino - 2015, 2016
  */
 "use strict";
-const url = require('url');
-const path = require('path');
-const _ = require('lodash');
+var url = require('url');
+var path = require('path');
+var _ = require('lodash');
 /**
  * Route: helper class to routing requests to the correct resource
  * @export
  * @class Route
  */
-class Route {
+var Route = (function () {
     /**
      * Creates an instance of Route.
      * @internal
@@ -19,7 +19,7 @@ class Route {
      * @param {string} [outFormat] (description)
      * @param {string} [inFormat] (description)
      */
-    constructor(uri, outFormat, inFormat) {
+    function Route(uri, outFormat, inFormat) {
         /**
          * if true it means this route is mapping to a file
          *
@@ -33,16 +33,16 @@ class Route {
          */
         this.headers = {}; // Additional headers filters or resources may set before returning an answer.
         if (uri) {
-            const parsedUrl = url.parse(uri, true);
-            const extension = path.extname(parsedUrl.pathname);
-            let resources = parsedUrl.pathname.split('/');
+            var parsedUrl = url.parse(uri, true);
+            var extension = path.extname(parsedUrl.pathname);
+            var resources = parsedUrl.pathname.split('/');
             if (parsedUrl.pathname.charAt(0) === '/') {
                 resources.unshift('site');
             }
-            resources = _.map(resources, (item) => decodeURI(item));
+            resources = _.map(resources, function (item) { return decodeURI(item); });
             this.pathname = parsedUrl.pathname;
             this.query = parsedUrl.query;
-            this.path = _.filter(resources, (res) => res.length > 0);
+            this.path = _.filter(resources, function (res) { return res.length > 0; });
             this.static = (extension.length > 0);
             this.outFormat = outFormat ? outFormat : 'application/json';
             this.inFormat = inFormat ? inFormat : 'application/json';
@@ -55,8 +55,8 @@ class Route {
      * @param {number} stpes (description)
      * @returns {Route} (description)
      */
-    stepThrough(stpes) {
-        const newRoute = new Route();
+    Route.prototype.stepThrough = function (stpes) {
+        var newRoute = new Route();
         _.assign(newRoute, {
             verb: this.verb,
             static: this.static,
@@ -69,28 +69,29 @@ class Route {
             request: this.request,
             response: this.response
         });
-        newRoute.path = _.map(this.path, v => _.clone(v));
+        newRoute.path = _.map(this.path, function (v) { return _.clone(v); });
         newRoute.path.splice(0, stpes);
         return newRoute;
-    }
+    };
     /**
      * (description)
      * @internal
      * @returns {string} (description)
      */
-    getNextStep() {
+    Route.prototype.getNextStep = function () {
         // console.log('[Route.nextStep] '+this.path[0] );
         return this.path[0];
-    }
+    };
     /**
      * Add new headers to this route
      * @internal
      * @param {relaxjs.ResponseHeaders} h (description)
      */
-    addResponseHeaders(h) {
+    Route.prototype.addResponseHeaders = function (h) {
         _.merge(this.headers, h);
-    }
-}
+    };
+    return Route;
+}());
 exports.Route = Route;
 /**
  * Create a Route from a request, response couple. For example:
@@ -106,7 +107,7 @@ function fromRequestResponse(request, response) {
     if (!request.url) {
         request.url = '/';
     }
-    const route = new Route(request.url);
+    var route = new Route(request.url);
     route.request = request;
     route.response = response;
     // Extract the cookies (if any) from the request

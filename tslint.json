@@ -98,24 +98,16 @@
       true,
       "call-signature",
       "parameter",
-      "arrow-parameter",
       "property-declaration"
     ],
     "typedef-whitespace": [
       true,
       {
-        "call-signature": "onespace",
-        "index-signature": "onespace",
-        "parameter": "space",
-        "property-declaration": "onespace",
-        "variable-declaration": "onespace"
-      },
-      {
-        "call-signature": "space",
-        "index-signature": "space",
-        "parameter": "space",
-        "property-declaration": "space",
-        "variable-declaration": "space"
+        "call-signature": "nospace",
+        "index-signature": "nospace",
+        "parameter": "nospace",
+        "property-declaration": "nospace",
+        "variable-declaration": "nospace"
       }
     ],
     "use-strict": [
