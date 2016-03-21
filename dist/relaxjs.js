@@ -214,7 +214,10 @@ var Container = (function () {
     /**
      * Remove a child resource from this container
      * @internal
-    */
+     *
+     * @param {ResourcePlayer} child (description)
+     * @returns {boolean} (description)
+     */
     Container.prototype.remove = function (child) {
         var log = internals.log().child({ func: 'Container.remove' });
         var resArr = this._resources[child.name];
@@ -237,7 +240,10 @@ var Container = (function () {
      * This function manages also the interpretaiton of an index in the path immediately
      * after the resource name.
      * @internal
-    */
+     * @protected
+     * @param {routing.Route} route (description)
+     * @returns {Direction} (description)
+     */
     Container.prototype._getStepDirection = function (route) {
         var log = internals.log().child({ func: 'Container.getStepDirection' });
         var direction = new Direction();
@@ -889,6 +895,7 @@ var Site = (function (_super) {
                 if (httpMethod === 'options' && _this._allowCors) {
                     var emb = new Embodiment(route.outFormat);
                     emb.setAdditionalHeaders({
+                        'Access-Control-Allow-Headers': 'Authorization',
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PATCH, DELETE'
                     });

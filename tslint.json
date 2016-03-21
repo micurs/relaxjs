@@ -59,7 +59,7 @@
     "no-null-keyword": true,
     "no-require-imports": true,
     "no-shadowed-variable": true,
-    "no-string-literal": true,
+    "no-string-literal": false,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unreachable": true,
@@ -103,7 +103,7 @@
     "typedef-whitespace": [
       true,
       {
-        "call-signature": "nospace",
+        "call-signature": "space",
         "index-signature": "nospace",
         "parameter": "nospace",
         "property-declaration": "nospace",

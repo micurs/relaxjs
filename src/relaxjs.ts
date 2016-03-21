@@ -435,7 +435,7 @@ export class Container {
    * Detach this resource from its parent
    * @internal
    */
-  detachFromParent(): void {
+  detachFromParent() : void {
     this._parent = undefined;
   }
 
@@ -443,7 +443,7 @@ export class Container {
   /**
    * Add the given headers to the one already set
    */
-  set headers( h : ResponseHeaders ) {
+  set headers( h: ResponseHeaders ) {
     const self = this;
     _.forOwn( h, ( value : string, key : string ) => self._headers[key] = value );
   }
@@ -462,7 +462,7 @@ export class Container {
    *
    * @param {string} cookie (description)
    */
-  setCookie( cookie : string ) : void {
+  setCookie( cookie: string ) : void {
     this._cookiesData.push(cookie);
   }
   /**
@@ -497,8 +497,11 @@ export class Container {
   /**
    * Remove a child resource from this container
    * @internal
-  */
-  remove( child : ResourcePlayer ) : boolean {
+   *
+   * @param {ResourcePlayer} child (description)
+   * @returns {boolean} (description)
+   */
+  remove( child: ResourcePlayer ) : boolean {
     const log = internals.log().child( { func : 'Container.remove'} );
     const resArr = this._resources[child.name];
     if ( !resArr ) {
@@ -521,13 +524,16 @@ export class Container {
    * This function manages also the interpretaiton of an index in the path immediately
    * after the resource name.
    * @internal
-  */
+   * @protected
+   * @param {routing.Route} route (description)
+   * @returns {Direction} (description)
+   */
   protected _getStepDirection( route : routing.Route ) : Direction {
     const log = internals.log().child( { func : 'Container.getStepDirection'} );
     const direction : Direction = new Direction();
     log.info('Follow next step on %s', JSON.stringify(route.path) );
     direction.route = route.stepThrough(1);
-    const childResName : string = direction.route.getNextStep();
+    const childResName: string = direction.route.getNextStep();
 
     if ( childResName in this._resources ) {
       let idx : number = 0;
@@ -911,24 +917,24 @@ export class Embodiment {
 export class Site extends Container implements HttpPlayer {
 
   /** @internal */
-  private static _instance : Site = undefined;
+  private static _instance: Site = undefined;
   // private _name: string = "site";
   /** @internal */
-  private _version : string = version;
+  private _version: string = version;
   /** @internal */
-  private _siteName : string = 'site';
+  private _siteName: string = 'site';
   /** @internal */
-  private _home : string = '/';
+  private _home: string = '/';
   /** @internal */
-  private _tempDir : string;
+  private _tempDir: string;
   /** @internal */
   private _pathCache = {};
   /** @internal */
-  private _errorView : string = undefined;
+  private _errorView: string = undefined;
   /** @internal */
-  private _allowCors : boolean = false;
+  private _allowCors: boolean = false;
   /** @internal */
-  private _filters : RequestFilterDict = {} ;
+  private _filters: RequestFilterDict = {} ;
 
   /**
    * Returns the direction toward the resource in the given route.
@@ -1136,7 +1142,7 @@ export class Site extends Container implements HttpPlayer {
    * @param {string} name (description)
    * @param {RequestFilter} filterFunction (description)
    */
-  addRequestFilter( name : string, filterFunction : RequestFilter ) : void {
+  addRequestFilter( name: string, filterFunction: RequestFilter ) : void {
     const log = internals.log().child( { func : 'Site.addRequestFilter'} );
     this._filters[name] = filterFunction;
     log.info('filters', _.keys(this._filters) );
@@ -1176,7 +1182,7 @@ export class Site extends Container implements HttpPlayer {
    * @param {http.ServerResponse} response (description)
    * @returns {Q.Promise< FiltersData >} (description)
    */
-  private _checkFilters( route : routing.Route, body : any, response : http.ServerResponse ) : Q.Promise< FiltersData > {
+  private _checkFilters( route: routing.Route, body: any, response: http.ServerResponse ) : Q.Promise< FiltersData > {
     const self = this;
     const log = internals.log().child( { func : 'Site._checkFilters'} );
     const later = Q.defer< FiltersData > ();
@@ -1237,6 +1243,7 @@ export class Site extends Container implements HttpPlayer {
         if ( httpMethod === 'options' && this._allowCors ) {
           const emb = new Embodiment(route.outFormat);
           emb.setAdditionalHeaders({
+            'Access-Control-Allow-Headers' : 'Authorization' ,
             'Access-Control-Allow-Origin' : '*' ,
             'Access-Control-Allow-Methods' : 'POST, GET, OPTIONS, PATCH, DELETE'
           });
