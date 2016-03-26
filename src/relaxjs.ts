@@ -1243,7 +1243,7 @@ export class Site extends Container implements HttpPlayer {
         if ( httpMethod === 'options' && this._allowCors ) {
           const emb = new Embodiment(route.outFormat);
           emb.setAdditionalHeaders({
-            'Access-Control-Allow-Headers' : 'Authorization' ,
+            'Access-Control-Allow-Headers' : 'Authorization, Content-Type' ,
             'Access-Control-Allow-Origin' : '*' ,
             'Access-Control-Allow-Methods' : 'POST, GET, OPTIONS, PATCH, DELETE'
           });

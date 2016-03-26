@@ -895,7 +895,7 @@ var Site = (function (_super) {
                 if (httpMethod === 'options' && _this._allowCors) {
                     var emb = new Embodiment(route.outFormat);
                     emb.setAdditionalHeaders({
-                        'Access-Control-Allow-Headers': 'Authorization',
+                        'Access-Control-Allow-Headers': 'Authorization, Content-Type',
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PATCH, DELETE'
                     });
