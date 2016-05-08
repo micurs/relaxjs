@@ -1317,7 +1317,7 @@ export class Site extends Container implements HttpPlayer {
    * child resource if available.
    * @internal
    */
-  head( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
+  head( route: routing.Route, body: any, filterData: FiltersData = {} ) : Q.Promise< Embodiment > {
     const self = this;
     const log = internals.log().child( { func : 'Site.head'} );
     log.info('route: %s', route.pathname);
@@ -1344,7 +1344,7 @@ export class Site extends Container implements HttpPlayer {
    * child resource if available.
    * @internal
    */
-  get( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
+  get( route: routing.Route, body: any, filterData: FiltersData = {} ) : Q.Promise< Embodiment > {
     const self = this;
     const log = internals.log().child( { func : 'Site.get'} );
     log.info('route: %s', route.pathname);
@@ -1381,7 +1381,7 @@ export class Site extends Container implements HttpPlayer {
    * child resource if available.
    * @internal
    */
-  post( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise< Embodiment > {
+  post( route: routing.Route, body: any, filterData: FiltersData = {} ) : Q.Promise< Embodiment > {
     const self = this;
     const log = internals.log().child( { func : 'Site.post'} );
     if ( route.path.length > 1 ) {
@@ -1403,7 +1403,7 @@ export class Site extends Container implements HttpPlayer {
    * child resource if available.
    * @internal
    */
-  patch( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise<Embodiment> {
+  patch( route: routing.Route, body: any, filterData: FiltersData = {} ) : Q.Promise<Embodiment> {
     const self = this;
     const log = internals.log().child( { func : 'Site.patch'} );
     if ( route.path.length > 1 ) {
@@ -1425,7 +1425,7 @@ export class Site extends Container implements HttpPlayer {
    * child resource if available.
    * @internal
    */
-  put( route : routing.Route, body : any, filterData : FiltersData = {}  ) : Q.Promise<Embodiment> {
+  put( route: routing.Route, body: any, filterData: FiltersData = {}  ) : Q.Promise<Embodiment> {
     const log = internals.log().child( { func : 'Site.put'} );
     const self = this;
     if ( route.path.length > 1 ) {
@@ -1446,8 +1446,12 @@ export class Site extends Container implements HttpPlayer {
    * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate
    * child resource if available.
    * @internal
+   * @param {routing.Route} route (description)
+   * @param {*} body (description)
+   * @param {FiltersData} [filterData={}] (description)
+   * @returns {Q.Promise<Embodiment>} (description)
    */
-  delete( route : routing.Route, body : any, filterData : FiltersData = {} ) : Q.Promise<Embodiment> {
+  delete( route: routing.Route, body: any, filterData: FiltersData = {} ) : Q.Promise<Embodiment> {
     const self = this;
     const ctx = `[${this.name}.delete] `;
     if ( route.static ) {
@@ -1515,10 +1519,10 @@ export class ResourcePlayer extends Container implements HttpPlayer {
     self._onDelete = res.onDelete;
     self._onPut = res.onPut;
 
-    // Copy other functions to self
-    // const resProps = Object.getOwnPropertyNames(res);
-    // _.map( _.filter( resProps, (rp) => res[rp]==='function'),
-
+    // Copy other functions in res to self (new in 0.2.8)
+    const resfn = _.functions(res);
+    const xresfn = _.filter( resfn, ( fn: string ) => fn !== 'onGet' && fn !== 'onPut' && fn !== 'onPost' && fn !== 'onDelete'  && fn !== 'onPatch' );
+    _.each( xresfn, fn => (this as any)[fn] = _.bind( (res as any)[fn], this ) );
 
     // Add children resources if available
     if ( res.resources ) {

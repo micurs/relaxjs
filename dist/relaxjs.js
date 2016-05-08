@@ -1084,6 +1084,10 @@ var Site = (function (_super) {
      * HTTP verb DELETE response functiion. Analyze the give route and redirect the call to the appropriate
      * child resource if available.
      * @internal
+     * @param {routing.Route} route (description)
+     * @param {*} body (description)
+     * @param {FiltersData} [filterData={}] (description)
+     * @returns {Q.Promise<Embodiment>} (description)
      */
     Site.prototype.delete = function (route, body, filterData) {
         if (filterData === void 0) { filterData = {}; }
@@ -1122,6 +1126,7 @@ var ResourcePlayer = (function (_super) {
      * Build a active resource by providing a Resource data object
      */
     function ResourcePlayer(res, parent) {
+        var _this = this;
         _super.call(this, parent);
         // private _site: Site;
         this._template = '';
@@ -1139,9 +1144,10 @@ var ResourcePlayer = (function (_super) {
         self._onPatch = res.onPatch;
         self._onDelete = res.onDelete;
         self._onPut = res.onPut;
-        // Copy other functions to self
-        // const resProps = Object.getOwnPropertyNames(res);
-        // _.map( _.filter( resProps, (rp) => res[rp]==='function'),
+        // Copy other functions in res to self
+        var resfn = _.functions(res);
+        var xresfn = _.filter(resfn, function (fn) { return fn !== 'onGet' && fn !== 'onPut' && fn !== 'onPost' && fn !== 'onDelete' && fn !== 'onPatch'; });
+        _.each(xresfn, function (fn) { return _this[fn] = _.bind(res[fn], _this); });
         // Add children resources if available
         if (res.resources) {
             _.each(res.resources, function (child, index) {
