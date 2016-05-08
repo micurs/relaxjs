@@ -1480,16 +1480,16 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
   static version = version;
   // private _site: Site;
-  private _template : string = '';
-  private _layout : string;
-  private _paramterNames : string[];
-  private _outFormat : string;
+  private _template: string = '';
+  private _layout: string;
+  private _paramterNames: string[];
+  private _outFormat: string;
 
-  private _onGet : ( query : any, respond : Response ) => void;
-  private _onPost : ( query : any, body : any, respond : Response ) => void;
-  private _onPatch : ( query : any, body : any, respond : Response ) => void;
-  private _onDelete : ( query : any, respond : Response ) => void;
-  private _onPut : ( query : any, body : any, respond : Response ) => void;
+  private _onGet: ( query: any, respond: Response ) => void;
+  private _onPost: ( query: any, body: any, respond: Response ) => void;
+  private _onPatch: ( query: any, body: any, respond: Response ) => void;
+  private _onDelete: ( query: any, respond: Response ) => void;
+  private _onPut: ( query: any, body: any, respond: Response ) => void;
 
   private _parameters = {};
 
@@ -1500,7 +1500,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
   /**
    * Build a active resource by providing a Resource data object
    */
-  constructor( res : Resource, parent : Container ) {
+  constructor( res: Resource, parent: Container ) {
     super(parent);
     const self = this;
     self.setName(res.name);
@@ -1514,6 +1514,11 @@ export class ResourcePlayer extends Container implements HttpPlayer {
     self._onPatch = res.onPatch;
     self._onDelete = res.onDelete;
     self._onPut = res.onPut;
+
+    // Copy other functions to self
+    // const resProps = Object.getOwnPropertyNames(res);
+    // _.map( _.filter( resProps, (rp) => res[rp]==='function'),
+
 
     // Add children resources if available
     if ( res.resources ) {

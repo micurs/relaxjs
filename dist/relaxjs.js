@@ -1139,6 +1139,9 @@ var ResourcePlayer = (function (_super) {
         self._onPatch = res.onPatch;
         self._onDelete = res.onDelete;
         self._onPut = res.onPut;
+        // Copy other functions to self
+        // const resProps = Object.getOwnPropertyNames(res);
+        // _.map( _.filter( resProps, (rp) => res[rp]==='function'),
         // Add children resources if available
         if (res.resources) {
             _.each(res.resources, function (child, index) {
