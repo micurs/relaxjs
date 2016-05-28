@@ -1,6 +1,6 @@
 {
   "name": "relaxjs",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A library written in Typescript to build RESTful services in node.js",
   "author": {
     "name": "Michele Ursino",
