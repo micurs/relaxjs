@@ -1705,8 +1705,8 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
     // If the onGet() is defined use id to get dynamic data from the user defined resource.
     if ( self._onGet ) {
-      let outFormat = self._outFormat || route ? route.outFormat : undefined;
-      log.info('Invoking GET on %s (%s)', self.name, outFormat );
+      const outFormat = self._outFormat || ( route ? route.outFormat : undefined ) ;
+      log.info('Invoking GET %s (mime: %s)', self.name, outFormat );
       this.filtersData = filtersData;
       this._headers = route.headers;
       this._cookies = route.cookies;  // The client code can retrieved the cookies using this.getCookies();
@@ -1774,13 +1774,14 @@ export class ResourcePlayer extends Container implements HttpPlayer {
     // If the onDelete() is defined use it to invoke a user define delete.
     if ( self._onDelete ) {
       log.info('call onDelete() for %s', self.name );
+      const outFormat = self._outFormat || ( route ? route.outFormat : undefined ) ;
       this._headers = route.headers;
       this._cookies = route.cookies;  // The client code can retrieved the cookies using this.getCookies();
       this.filtersData = filtersData;
       const response = new Response( self );
       response.onOk( ( resresp : ResourceResponse ) => {
         self._updateData(resresp.data);
-        self._deliverReply( later, resresp, self._outFormat ? self._outFormat : route.outFormat  );
+        self._deliverReply( later, resresp, outFormat  );
       });
       response.onFail( ( rxErr : RxError ) => later.reject(rxErr) );
       try {
@@ -1841,13 +1842,14 @@ export class ResourcePlayer extends Container implements HttpPlayer {
 
     // Call the onPost() for this resource (user code)
     if ( self._onPost ) {
+      const outFormat = self._outFormat || ( route ? route.outFormat : undefined ) ;
       log.info('calling onPost() for %s', self.name );
       this.filtersData = filtersData;
       this._headers = route.headers;
       this._cookies = route.cookies;  // The client code can retrieved the cookies using this.getCookies();
       const response = new Response( self );
       response.onOk( ( resresp : ResourceResponse ) => {
-        self._deliverReply(later, resresp, self._outFormat ? self._outFormat : route.outFormat  );
+        self._deliverReply(later, resresp, outFormat  );
       });
       response.onFail( ( rxErr : RxError ) => later.reject(rxErr) );
       try {
@@ -1909,13 +1911,14 @@ export class ResourcePlayer extends Container implements HttpPlayer {
     // 3 - call the resource defined function to respond to a PATCH request
     if ( self._onPatch ) {
       log.info('calling onPatch() for %s', self.name );
+      const outFormat = self._outFormat || ( route ? route.outFormat : undefined ) ;
       this.filtersData = filtersData;
       this._headers = route.headers;
       this._cookies = route.cookies;  // The client code can retrieved the cookies using this.getCookies();
       const response = new Response( self );
       response.onOk(  ( resresp : ResourceResponse ) => {
         self._updateData(resresp.data);
-        self._deliverReply(later, resresp, self._outFormat ? self._outFormat : route.outFormat  );
+        self._deliverReply(later, resresp, outFormat  );
       });
       response.onFail( ( rxErr: RxError ) => later.reject(rxErr) );
       try {

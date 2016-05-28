@@ -1355,8 +1355,8 @@ var ResourcePlayer = (function (_super) {
         // var dyndata: any = {};
         // If the onGet() is defined use id to get dynamic data from the user defined resource.
         if (self._onGet) {
-            var outFormat_1 = self._outFormat || route ? route.outFormat : undefined;
-            log.info('Invoking GET on %s (%s)', self.name, outFormat_1);
+            var outFormat_1 = self._outFormat || (route ? route.outFormat : undefined);
+            log.info('Invoking GET %s (mime: %s)', self.name, outFormat_1);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
@@ -1417,13 +1417,14 @@ var ResourcePlayer = (function (_super) {
         // If the onDelete() is defined use it to invoke a user define delete.
         if (self._onDelete) {
             log.info('call onDelete() for %s', self.name);
+            var outFormat_2 = self._outFormat || (route ? route.outFormat : undefined);
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             this.filtersData = filtersData;
             var response = new Response(self);
             response.onOk(function (resresp) {
                 self._updateData(resresp.data);
-                self._deliverReply(later, resresp, self._outFormat ? self._outFormat : route.outFormat);
+                self._deliverReply(later, resresp, outFormat_2);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1478,13 +1479,14 @@ var ResourcePlayer = (function (_super) {
         }
         // Call the onPost() for this resource (user code)
         if (self._onPost) {
+            var outFormat_3 = self._outFormat || (route ? route.outFormat : undefined);
             log.info('calling onPost() for %s', self.name);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             var response = new Response(self);
             response.onOk(function (resresp) {
-                self._deliverReply(later, resresp, self._outFormat ? self._outFormat : route.outFormat);
+                self._deliverReply(later, resresp, outFormat_3);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1540,13 +1542,14 @@ var ResourcePlayer = (function (_super) {
         // 3 - call the resource defined function to respond to a PATCH request
         if (self._onPatch) {
             log.info('calling onPatch() for %s', self.name);
+            var outFormat_4 = self._outFormat || (route ? route.outFormat : undefined);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             var response = new Response(self);
             response.onOk(function (resresp) {
                 self._updateData(resresp.data);
-                self._deliverReply(later, resresp, self._outFormat ? self._outFormat : route.outFormat);
+                self._deliverReply(later, resresp, outFormat_4);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
