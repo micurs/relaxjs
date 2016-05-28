@@ -1,5 +1,5 @@
 /*
- * Relax.js Route utility class
+ * relaxjs route utility class
  * by Michele Ursino - 2015, 2016
  */
 

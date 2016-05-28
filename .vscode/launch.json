@@ -4,29 +4,31 @@
 	// ONLY "node" and "mono" are supported, change "type" to switch.
 	"configurations": [
 		{
-			// Name of configuration; appears in the launch configuration drop down menu.
-			"name": "relaxjs",
-			// Type of configuration. Possible values: "node", "mono".
+			"name": "test",
+			"request": "launch",
 			"type": "node",
-			// Workspace relative or absolute path to the program.
-			"program": "dist/relaxjs.js",
-			// Automatically stop program after launch.
+			"program": "${workspaceRoot}/node_modules/jasmine-node/bin/jasmine-node",
 			"stopOnEntry": false,
-			// Command line arguments passed to the program.
-			"args": [ "-p" ],
-			// Workspace relative or absolute path to the working directory of the program being debugged. Default is the current workspace.
-			"cwd": ".",
-			// Workspace relative or absolute path to the runtime executable to be used. Default is the runtime executable on the PATH.
-			"runtimeExecutable": null,
-			// Optional arguments passed to the runtime executable.
+			"args": [ "--verbose", "--color", "dist/tests" ],
+			"cwd": "${workspaceRoot}",
 			"runtimeArgs": ["--nolazy"],
-			// Environment variables passed to the program.
+			"sourceMaps": true,
+			"externalConsole": true
+		},
+		{
+			"name": "relaxjs",
+			"request": "launch",
+			"type": "node",
+			"program": "${workspaceRoot}/dist/relaxjs.js",
+			"stopOnEntry": false,
+			"args": [ "-p" ],
+			"cwd": "${workspaceRoot}",
+			"runtimeExecutable": null,
+			"runtimeArgs": ["--nolazy"],
 			"env": {
 				"NODE_ENV": "development"
 			},
-			// Use JavaScript source maps (if they exist).
 			"sourceMaps": false,
-			// If JavaScript source maps are enabled, the generated code is expected in this directory.
 			"outDir": null
 		},
 		{

@@ -12,7 +12,11 @@
   },
   "files": [
     "./src/internals.ts",
+    "./src/filters.ts",
     "./src/routing.ts",
-    "./src/relaxjs.ts"
+    "./src/relaxjs.ts",
+    "./src/tests/PathNavigation-spec.ts",
+    "./src/tests/GET1-spec.ts",
+    "./src/tests/GET2-spec.ts"
   ]
 }

@@ -10,19 +10,23 @@ var routing = require('../dist/routing.js');
 describe('Test GET responses: ', function() {
 
   describe('1.1 GET static data from a Resource: hello', function() {
-    it('should get {"message":"Hello World!"}', function() {
+    it('should get {"message":"Hello World!"}', function( done ) {
       var result;
       var rp = new relaxjs.ResourcePlayer( { name: 'hello', data: { message: "Hello World!" } });
       rp.get( new routing.Route('hello') )
-        .then( function(emb) { result = emb.bodyAsString(); })
-        .fail( function (error) { result = JSON.stringify(error);  } );
-
-      waitsFor( function() { return result!=undefined } , 'Waited to long for the GET call to be completed.', 1000 );
-      runs( function() {
+      .then( function(emb) {
+        result = emb.bodyAsString();
         expect( result ).toBeDefined();
         expect( result ).toBe('{"message":"Hello World!"}');
+        done();
+      })
+      .fail( function (error) {
+        done(error);
       });
-    });
+      // waitsFor( function() { return result!=undefined } , 'Waited to long for the GET call to be completed.', 1000 );
+      // runs( function() {
+      // });
+    }, 1000);
   });
 
 

@@ -35,6 +35,7 @@ var tsProject = tsc.createProject('./tsconfig.json',  { sortOutput: true } );
 var relaxjs_modules = [
   './src/interanls.ts',
   './src/routing.ts',
+  './src/filters.ts',
   './src/relaxjs.ts'
 ];
 
@@ -46,7 +47,8 @@ gulp.task('relaxjs', function(){
         .on('error', showsTscError );
 
   return merge([
-    res.dts.pipe( gulp.dest('./dist') ),
+    res.dts
+       .pipe( gulp.dest('./dist') ),
     res.js
       .pipe( sourcemaps.write('.') )
       .pipe( gulp.dest('./dist') )
@@ -60,21 +62,23 @@ gulp.task('relaxjs', function(){
 
 var dts_bundle_options = {
   name: 'relaxjs',
-  main: './dist/relaxjs.d.ts',
-  indent: ' ',
   baseDir: './dist',
+  main: './dist/relaxjs.d.ts',
   out: 'relaxjs.d.ts',
+  indent: ' ',
   removeSource: true,
   emitOnIncludedFileNotFound: true,
   emitOnNoIncludedFileNotFound: true,
   exclude: function( file, external ) {
     if ( external ) return true;
     if ( file.indexOf('internals') >= 0 ) return true;
+    console.log('[dts] adding', file );
     return false;
   }
 };
 
 gulp.task('dts', ['relaxjs' ], function() {
+  console.log('[dts] : Bundle type definition into ', dts_bundle_options.main );
   return dts.bundle(dts_bundle_options);
 });
 

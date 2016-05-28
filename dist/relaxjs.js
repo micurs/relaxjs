@@ -9,17 +9,21 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-///<reference path='references.ts' />
+/// <reference path='../typings/index.d.ts' />
 var http = require('http');
-var stream = require('stream');
+// import * as fs from 'fs';
+var events_1 = require('events');
 var Q = require('q');
 var _ = require('lodash');
 var xml2js = require('xml2js');
 // sub-modules importing
 var internals = require('./internals');
 var routing = require('./routing');
-exports.routing = routing;
-exports.internals = internals;
+var rxjsFilters = require('./filters');
+// exports.routing = routing;
+// exports.internals = internals;
+// exports.filters = filters;
+exports.filters = rxjsFilters;
 /* tslint:disable */
 var packageinfo = require(__dirname + '/../package.json');
 var version = packageinfo.version;
@@ -141,21 +145,6 @@ var Container = (function () {
         enumerable: true,
         configurable: true
     });
-    /**
-     * (description)
-     *
-     * @param {string} newName (description)
-     */
-    Container.prototype.setName = function (newName) {
-        this._name = newName;
-    };
-    /**
-     * Detach this resource from its parent
-     * @internal
-     */
-    Container.prototype.detachFromParent = function () {
-        this._parent = undefined;
-    };
     Object.defineProperty(Container.prototype, "headers", {
         /**
          * get the headers
@@ -175,6 +164,34 @@ var Container = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Container.prototype, "cookiesData", {
+        /**
+         * Cookies data as a string array
+         *
+         * @readonly
+         * @type {string[]}
+         */
+        get: function () {
+            return this._cookiesData;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * (description)
+     *
+     * @param {string} newName (description)
+     */
+    Container.prototype.setName = function (newName) {
+        this._name = newName;
+    };
+    /**
+     * Detach this resource from its parent
+     * @internal
+     */
+    Container.prototype.detachFromParent = function () {
+        this._parent = undefined;
+    };
     /**
      * (description)
      *
@@ -191,19 +208,6 @@ var Container = (function () {
     Container.prototype.getCookies = function () {
         return this._cookies;
     };
-    Object.defineProperty(Container.prototype, "cookiesData", {
-        /**
-         * Cookies data as a string array
-         *
-         * @readonly
-         * @type {string[]}
-         */
-        get: function () {
-            return this._cookiesData;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * (description)
      * @internal
@@ -276,7 +280,7 @@ var Container = (function () {
      * The Direction object returned may point directly to the resource requested or
      * may point to a resource that will lead to the requested resource
      * @internal
-    */
+     */
     Container.prototype._getDirection = function (route, verb) {
         if (verb === void 0) { verb = 'GET'; }
         var log = internals.log().child({ func: 'Container._getDirection' });
@@ -291,7 +295,7 @@ var Container = (function () {
     };
     /**
      * Return the resource matching the given path.
-    */
+     */
     Container.prototype.getResource = function (pathname) {
         var route = new routing.Route(pathname);
         var direction = this._getDirection(route); // This one may return the resource directly if cached
@@ -495,7 +499,7 @@ var Embodiment = (function () {
         this.cookiesData = []; // example a cookie valie would be ["type=ninja", "language=javascript"]
         this.additionalHeaders = {};
         this.httpCode = code;
-        if (data instanceof stream.Readable) {
+        if (data instanceof events_1.EventEmitter) {
             this.bodyStream = data;
         }
         else {
@@ -626,36 +630,6 @@ var Site = (function (_super) {
         }
     }
     /**
-     * Returns the direction toward the resource in the given route.
-     * The Direction object returned may point directly to the resource requested or
-     * may point to a resource that will lead to the requested resource
-     * @internal
-    */
-    Site.prototype._getDirection = function (route, verb) {
-        if (verb === void 0) { verb = 'GET'; }
-        var log = internals.log().child({ func: 'Site._getDirection' });
-        var cachedPath = this._pathCache[route.pathname];
-        if (cachedPath) {
-            var direction = new Direction();
-            direction.resource = cachedPath.resource;
-            direction.route = route;
-            direction.route.path = cachedPath.path;
-            direction.verb = verb;
-            log.info('%s Path Cache found for "%s"', verb, route.pathname);
-            return direction;
-        }
-        else {
-            log.info('%s Step into %s ', verb, route.pathname);
-            var direction = this._getStepDirection(route);
-            if (direction && direction.resource) {
-                direction.verb = verb;
-                return direction;
-            }
-        }
-        log.info('No Direction found', verb, route.pathname);
-        return undefined;
-    };
-    /**
      * (description)
      *
      * @static
@@ -668,12 +642,6 @@ var Site = (function (_super) {
             Site._instance = new Site(name ? name : 'site');
         }
         return Site._instance;
-    };
-    /**
-     * Enable positive responses to OPTIONS Preflighted requests in CORS
-     */
-    Site.prototype.allowCORS = function (flag) {
-        this._allowCors = flag;
     };
     Object.defineProperty(Site.prototype, "name", {
         /**
@@ -714,6 +682,42 @@ var Site = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Returns the direction toward the resource in the given route.
+     * The Direction object returned may point directly to the resource requested or
+     * may point to a resource that will lead to the requested resource
+     * @internal
+     */
+    Site.prototype._getDirection = function (route, verb) {
+        if (verb === void 0) { verb = 'GET'; }
+        var log = internals.log().child({ func: 'Site._getDirection' });
+        var cachedPath = this._pathCache[route.pathname];
+        if (cachedPath) {
+            var direction = new Direction();
+            direction.resource = cachedPath.resource;
+            direction.route = route;
+            direction.route.path = cachedPath.path;
+            direction.verb = verb;
+            log.info('%s Path Cache found for "%s"', verb, route.pathname);
+            return direction;
+        }
+        else {
+            log.info('%s Step into %s ', verb, route.pathname);
+            var direction = this._getStepDirection(route);
+            if (direction && direction.resource) {
+                direction.verb = verb;
+                return direction;
+            }
+        }
+        log.info('No Direction found', verb, route.pathname);
+        return undefined;
+    };
+    /**
+     * Enable positive responses to OPTIONS Preflighted requests in CORS
+     */
+    Site.prototype.allowCORS = function (flag) {
+        this._allowCors = flag;
+    };
     /**
      * Setup a shortcut to a specific resource. This function is used internally.
      * @internal
@@ -1121,12 +1125,12 @@ exports.Site = Site;
  */
 var ResourcePlayer = (function (_super) {
     __extends(ResourcePlayer, _super);
-    // public data = {};
     /**
      * Build a active resource by providing a Resource data object
      */
     function ResourcePlayer(res, parent) {
         var _this = this;
+        if (parent === void 0) { parent = undefined; }
         _super.call(this, parent);
         // private _site: Site;
         this._template = '';
@@ -1144,7 +1148,7 @@ var ResourcePlayer = (function (_super) {
         self._onPatch = res.onPatch;
         self._onDelete = res.onDelete;
         self._onPut = res.onPut;
-        // Copy other functions in res to self
+        // Copy other functions in res to self (new in 0.2.8)
         var resfn = _.functions(res);
         var xresfn = _.filter(resfn, function (fn) { return fn !== 'onGet' && fn !== 'onPut' && fn !== 'onPost' && fn !== 'onDelete' && fn !== 'onPatch'; });
         _.each(xresfn, function (fn) { return _this[fn] = _.bind(res[fn], _this); });
@@ -1157,13 +1161,8 @@ var ResourcePlayer = (function (_super) {
         // Merge the data into this object to easy access in the view.
         self._updateData(res.data);
     }
-    /**
-     *
-     */
-    ResourcePlayer.prototype.setOutputFormat = function (fmt) {
-        this._outFormat = fmt;
-    };
     Object.defineProperty(ResourcePlayer.prototype, "outFormat", {
+        // public data = {};
         set: function (f) {
             this._outFormat = f;
         },
@@ -1177,6 +1176,12 @@ var ResourcePlayer = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     *
+     */
+    ResourcePlayer.prototype.setOutputFormat = function (fmt) {
+        this._outFormat = fmt;
+    };
     /*
      * Reads the parameters from a route and store them in the this._parmaters member.
      * Return the number of paramters correcly parsed.
@@ -1307,13 +1312,14 @@ var ResourcePlayer = (function (_super) {
      * will call the onGet() for the this resource.
      */
     ResourcePlayer.prototype.get = function (route, filtersData) {
+        if (filtersData === void 0) { filtersData = undefined; }
         var self = this; // use to consistently access this object.
         var log = internals.log().child({ func: 'ResourcePlayer(' + self.name + ').get' });
         var paramCount = self._paramterNames.length;
         var later = Q.defer();
         this.resetOutgoingCookies();
         // Dives in and navigates through the path to find the child resource that can answer this GET call
-        if (route.path.length > (1 + paramCount)) {
+        if (route && route.path.length > (1 + paramCount)) {
             var direction = self._getStepDirection(route);
             if (direction.resource) {
                 var res = (direction.resource);
@@ -1328,8 +1334,13 @@ var ResourcePlayer = (function (_super) {
                 }
             }
         }
-        // 2 - Read the parameters from the route
-        log.info('GET Target Found : %s (requires %d parameters)', self.name, paramCount);
+        // Check route.path[0] is referring to this resource
+        if (route.path[0] !== this.name) {
+            later.reject(new RxError("[error invalid resource] " + route.path[0] + " is not " + this.name + " ", 'GET ' + this.name, 404));
+            return later.promise;
+        }
+        // Read the parameters from the route
+        log.info('GET Target Found: %s (requires %d parameters)', self.name, paramCount);
         if (paramCount > 0) {
             if (self._readParameters(route.path) < paramCount) {
                 later.reject(new RxError('Not enough paramters available in the URI ', 'GET ' + self.name, 404));
@@ -1337,19 +1348,22 @@ var ResourcePlayer = (function (_super) {
             }
         }
         // Set the cach to invoke this resource for this path directly next time
-        site().setPathCache(route.pathname, { path: route.path, resource: this });
+        if (route) {
+            site().setPathCache(route.pathname, { path: route.path, resource: this });
+        }
         // This is the resource that need to answer either with a onGet or directly with data
         // var dyndata: any = {};
         // If the onGet() is defined use id to get dynamic data from the user defined resource.
         if (self._onGet) {
-            log.info('Invoking GET on %s (%s)', self.name, route.outFormat);
+            var outFormat_1 = self._outFormat || route ? route.outFormat : undefined;
+            log.info('Invoking GET on %s (%s)', self.name, outFormat_1);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             var response = new Response(self);
             response.onOk(function (resresp) {
                 self._updateData(resresp.data);
-                self._deliverReply(later, resresp, self._outFormat ? self._outFormat : route.outFormat, self._outFormat !== undefined);
+                self._deliverReply(later, resresp, outFormat_1, outFormat_1 !== undefined);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1393,7 +1407,7 @@ var ResourcePlayer = (function (_super) {
             }
         }
         // 2 - Read the parameters from the route
-        log.info('DELETE Target Found : %s (requires %d parameters)', self.name, paramCount);
+        log.info('DELETE Target Found: %s (requires %d parameters)', self.name, paramCount);
         if (paramCount > 0) {
             if (self._readParameters(route.path) < paramCount) {
                 later.reject(new RxError('Not enough paramters available in the URI ', 'DELETE ' + self.name, 404));

@@ -68,7 +68,7 @@
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "no-var-requires": true,
-    "object-literal-sort-keys": true,
+    "object-literal-sort-keys": false,
     "one-line": [
       true,
       "check-open-brace",
@@ -103,7 +103,7 @@
     "typedef-whitespace": [
       true,
       {
-        "call-signature": "space",
+        "call-signature": "spaces",
         "index-signature": "nospace",
         "parameter": "nospace",
         "property-declaration": "nospace",

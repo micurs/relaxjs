@@ -4,12 +4,12 @@
 */
 "use strict";
 var fs = require('fs');
-var mime = require('mime');
 var Q = require('q');
+var _ = require('lodash');
+var xml2js = require('xml2js');
+var mime = require('mime');
 var querystring = require('querystring');
 var bunyan = require('bunyan');
-var _ = require("lodash");
-var xml2js = require('xml2js');
 var multiparty = require('multiparty');
 var relaxjs = require('./relaxjs');
 var _log;

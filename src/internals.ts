@@ -3,23 +3,24 @@
  * by Michele Ursino - 2015
 */
 
-///<reference path='./relaxjs.ts' />
+/// <reference path='../typings/index.d.ts' />
 
-import http = require("http");
-import fs = require('fs');
-import mime = require('mime');
-import Q = require('q');
-import querystring = require('querystring');
-import bunyan = require('bunyan');
-import _ = require("lodash");
-import xml2js = require('xml2js');
-import multiparty = require('multiparty');
+import * as http from 'http';
+import * as fs from 'fs';
+import * as Q from 'q';
+import * as _ from 'lodash';
+import * as xml2js from 'xml2js';
 
-import relaxjs = require('./relaxjs');
+import * as mime from 'mime';
+import * as querystring from 'querystring';
+import * as bunyan from 'bunyan';
+import * as multiparty from 'multiparty';
 
-var _log : bunyan.Logger;
-var _appName : string;
-var _multipOptions : multiparty.FormOptions = {};
+import * as relaxjs from './relaxjs';
+
+var _log: bunyan.Logger;
+var _appName: string;
+var _multipOptions: multiparty.FormOptions = {};
 
 /*
  * Bunyan log utilities
@@ -199,12 +200,12 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
   var laterAction = Q.defer< relaxjs.Embodiment >();
   var staticFile = '.' + filename;
   log.info('serving %s',staticFile);
-  
+
   if ( !fs.existsSync(staticFile) ) {
     log.warn('File "%s" not found',staticFile);
     laterAction.reject( new relaxjs.RxError(`File ${filename} not found`, 'File Not Found', 404 ) );
-  } 
-  else {   
+  }
+  else {
     fs.stat( staticFile , ( err, stats: fs.Stats ) => {
       log.info(`Sreaming ${staticFile}`);
       headers['content-length'] = stats.size.toString();
@@ -213,9 +214,9 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
       reply.additionalHeaders = headers;
       laterAction.resolve( reply );
     });
-   
+
   }
-  
+
   /*
   fs.readFile( staticFile, function( err : Error, content : Buffer ) {
     if ( err ) {
@@ -229,7 +230,7 @@ export function viewStatic( filename: string, headers: relaxjs.ResponseHeaders  
     }
   });
   */
-  
+
   return laterAction.promise;
 }
 
