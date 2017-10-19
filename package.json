@@ -1,6 +1,6 @@
 {
   "name": "relaxjs",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A library written in Typescript to build RESTful services in node.js",
   "author": {
     "name": "Michele Ursino",
@@ -28,7 +28,7 @@
     "definition": "dist/relaxjs.d.ts"
   },
   "scripts": {
-    "build": "tsc -p .",
+    "build": "tsc --version && tsc -p .",
     "typedef": "gulp dts",
     "tsd": "tsd reinstall --save --overwrite",
     "test": "gulp && jasmine-node --verbose --color dist/tests",
