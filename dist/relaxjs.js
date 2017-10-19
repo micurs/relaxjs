@@ -1,25 +1,31 @@
+"use strict";
 /*
  * Relax.js version 0.2.0
  * by Michele Ursino June - 2015
  * -------------------------------------------------------
 */
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path='../typings/index.d.ts' />
-var http = require('http');
+var http = require("http");
 // import * as fs from 'fs';
-var events_1 = require('events');
-var Q = require('q');
-var _ = require('lodash');
-var xml2js = require('xml2js');
+var events_1 = require("events");
+var Q = require("q");
+var _ = require("lodash");
+var xml2js = require("xml2js");
 // sub-modules importing
-var internals = require('./internals');
-var routing = require('./routing');
-var rxjsFilters = require('./filters');
+var internals = require("./internals");
+var routing = require("./routing");
+var rxjsFilters = require("./filters");
 // exports.routing = routing;
 // exports.internals = internals;
 // exports.filters = filters;
@@ -51,13 +57,14 @@ var RxError = (function (_super) {
      * @param {string} [extra] (description)
      */
     function RxError(message, name, code, extra) {
-        _super.call(this);
+        var _this = _super.call(this) || this;
         var tmp = new Error(); // We use this to generate the stack info to assign to this error
-        this.message = message;
-        this.name = name;
-        this.httpCode = code ? code : 500;
-        this.stack = tmp.stack;
-        this.extra = extra;
+        _this.message = message;
+        _this.name = name;
+        _this.httpCode = code ? code : 500;
+        _this.stack = tmp.stack;
+        _this.extra = extra;
+        return _this;
     }
     /**
      * Return the http error code
@@ -536,6 +543,7 @@ var Embodiment = (function () {
         if (this.location) {
             /* tslint:disable */
             headers['Location'] = this.location;
+            /* tslint:enable */
         }
         // Add the additionalHeaders to the response
         _.forOwn(this.additionalHeaders, function (value, key) {
@@ -597,37 +605,38 @@ var Site = (function (_super) {
      * @param {Container} [parent] (description)
      */
     function Site(siteName, parent) {
-        _super.call(this, parent);
+        var _this = _super.call(this, parent) || this;
         // private _name: string = "site";
         /** @internal */
-        this._version = version;
+        _this._version = version;
         /** @internal */
-        this._siteName = 'site';
+        _this._siteName = 'site';
         /** @internal */
-        this._home = '/';
+        _this._home = '/';
         /** @internal */
-        this._pathCache = {};
+        _this._pathCache = {};
         /** @internal */
-        this._errorView = undefined;
+        _this._errorView = undefined;
         /** @internal */
-        this._allowCors = false;
+        _this._allowCors = false;
         /** @internal */
-        this._filters = {};
+        _this._filters = {};
         /**
          * (description)
          *
          * @type {boolean}
          */
-        this.enableFilters = false;
-        this._siteName = siteName;
+        _this.enableFilters = false;
+        _this._siteName = siteName;
         if (Site._instance) {
             throw new Error('Error: Only one site is allowed.');
         }
-        Site._instance = this;
+        Site._instance = _this;
         internals.initLog(siteName);
         if (_.find(process.argv, function (arg) { return arg === '--relaxjs-verbose'; })) {
             internals.setLogVerbose(true);
         }
+        return _this;
     }
     /**
      * (description)
@@ -1129,14 +1138,13 @@ var ResourcePlayer = (function (_super) {
      * Build a active resource by providing a Resource data object
      */
     function ResourcePlayer(res, parent) {
-        var _this = this;
         if (parent === void 0) { parent = undefined; }
-        _super.call(this, parent);
+        var _this = _super.call(this, parent) || this;
         // private _site: Site;
-        this._template = '';
-        this._parameters = {};
-        this.filtersData = {};
-        var self = this;
+        _this._template = '';
+        _this._parameters = {};
+        _this.filtersData = {};
+        var self = _this;
         self.setName(res.name);
         self._template = res.view;
         self._layout = res.layout;
@@ -1160,6 +1168,7 @@ var ResourcePlayer = (function (_super) {
         }
         // Merge the data into this object to easy access in the view.
         self._updateData(res.data);
+        return _this;
     }
     Object.defineProperty(ResourcePlayer.prototype, "outFormat", {
         // public data = {};
@@ -1237,7 +1246,7 @@ var ResourcePlayer = (function (_super) {
             // Here we copy the data into the resource itself and process it through the viewing engine.
             // This allow the code in the view to act in the context of the resourcePlayer.
             self.data = resResponse.data;
-            internals.viewDynamic(self._template, self, self._layout)
+            internals.viewDynamic(self._template, _.clone(self), self._layout)
                 .then(function (reply) {
                 reply.httpCode = resResponse.httpCode ? resResponse.httpCode : 200;
                 reply.location = resResponse.location;
@@ -1355,15 +1364,16 @@ var ResourcePlayer = (function (_super) {
         // var dyndata: any = {};
         // If the onGet() is defined use id to get dynamic data from the user defined resource.
         if (self._onGet) {
-            var outFormat_1 = self._outFormat || (route ? route.outFormat : undefined);
-            log.info('Invoking GET %s (mime: %s)', self.name, outFormat_1);
+            log.info('Invoking GET %s ', self.name);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             var response = new Response(self);
             response.onOk(function (resresp) {
+                var outFormat = self._outFormat || (route ? route.outFormat : undefined);
+                log.info('Resolving GET with ', outFormat);
                 self._updateData(resresp.data);
-                self._deliverReply(later, resresp, outFormat_1, outFormat_1 !== undefined);
+                self._deliverReply(later, resresp, outFormat, outFormat !== undefined);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1417,14 +1427,15 @@ var ResourcePlayer = (function (_super) {
         // If the onDelete() is defined use it to invoke a user define delete.
         if (self._onDelete) {
             log.info('call onDelete() for %s', self.name);
-            var outFormat_2 = self._outFormat || (route ? route.outFormat : undefined);
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             this.filtersData = filtersData;
             var response = new Response(self);
             response.onOk(function (resresp) {
+                var outFormat = self._outFormat || (route ? route.outFormat : undefined);
+                log.info('Resolving DELETE with ', outFormat);
                 self._updateData(resresp.data);
-                self._deliverReply(later, resresp, outFormat_2);
+                self._deliverReply(later, resresp, outFormat);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1479,14 +1490,15 @@ var ResourcePlayer = (function (_super) {
         }
         // Call the onPost() for this resource (user code)
         if (self._onPost) {
-            var outFormat_3 = self._outFormat || (route ? route.outFormat : undefined);
             log.info('calling onPost() for %s', self.name);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             var response = new Response(self);
             response.onOk(function (resresp) {
-                self._deliverReply(later, resresp, outFormat_3);
+                var outFormat = self._outFormat || (route ? route.outFormat : undefined);
+                log.info('Resolving POST with ', outFormat);
+                self._deliverReply(later, resresp, outFormat);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1542,14 +1554,15 @@ var ResourcePlayer = (function (_super) {
         // 3 - call the resource defined function to respond to a PATCH request
         if (self._onPatch) {
             log.info('calling onPatch() for %s', self.name);
-            var outFormat_4 = self._outFormat || (route ? route.outFormat : undefined);
             this.filtersData = filtersData;
             this._headers = route.headers;
             this._cookies = route.cookies; // The client code can retrieved the cookies using this.getCookies();
             var response = new Response(self);
             response.onOk(function (resresp) {
+                var outFormat = self._outFormat || (route ? route.outFormat : undefined);
+                log.info('Resolving PATCH with ', outFormat);
                 self._updateData(resresp.data);
-                self._deliverReply(later, resresp, outFormat_4);
+                self._deliverReply(later, resresp, outFormat);
             });
             response.onFail(function (rxErr) { return later.reject(rxErr); });
             try {
@@ -1599,5 +1612,4 @@ function site(name) {
     return Site.$(name);
 }
 exports.site = site;
-
 //# sourceMappingURL=relaxjs.js.map

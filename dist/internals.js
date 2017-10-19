@@ -1,17 +1,18 @@
+"use strict";
 /*
  * Relax.js version 0.2.0
  * by Michele Ursino - 2015
 */
-"use strict";
-var fs = require('fs');
-var Q = require('q');
-var _ = require('lodash');
-var xml2js = require('xml2js');
-var mime = require('mime');
-var querystring = require('querystring');
-var bunyan = require('bunyan');
-var multiparty = require('multiparty');
-var relaxjs = require('./relaxjs');
+Object.defineProperty(exports, "__esModule", { value: true });
+var fs = require("fs");
+var Q = require("q");
+var _ = require("lodash");
+var xml2js = require("xml2js");
+var mime = require("mime");
+var querystring = require("querystring");
+var bunyan = require("bunyan");
+var multiparty = require("multiparty");
+var relaxjs = require("./relaxjs");
 var _log;
 var _appName;
 var _multipOptions = {};
@@ -331,5 +332,4 @@ function viewDynamic(viewName, viewData, layoutName) {
     return laterAct.promise;
 }
 exports.viewDynamic = viewDynamic;
-
 //# sourceMappingURL=internals.js.map

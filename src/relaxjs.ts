@@ -1588,7 +1588,7 @@ export class ResourcePlayer extends Container implements HttpPlayer {
       // Here we copy the data into the resource itself and process it through the viewing engine.
       // This allow the code in the view to act in the context of the resourcePlayer.
       self.data = resResponse.data;
-      internals.viewDynamic(self._template, self, self._layout )
+      internals.viewDynamic(self._template, _.clone(self), self._layout )
         .then( ( reply: Embodiment ) => {
           reply.httpCode = resResponse.httpCode ? resResponse.httpCode : 200;
           reply.location = resResponse.location;
