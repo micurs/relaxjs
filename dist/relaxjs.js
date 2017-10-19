@@ -1,31 +1,25 @@
-"use strict";
 /*
  * Relax.js version 0.2.0
  * by Michele Ursino June - 2015
  * -------------------------------------------------------
 */
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /// <reference path='../typings/index.d.ts' />
-var http = require("http");
+var http = require('http');
 // import * as fs from 'fs';
-var events_1 = require("events");
-var Q = require("q");
-var _ = require("lodash");
-var xml2js = require("xml2js");
+var events_1 = require('events');
+var Q = require('q');
+var _ = require('lodash');
+var xml2js = require('xml2js');
 // sub-modules importing
-var internals = require("./internals");
-var routing = require("./routing");
-var rxjsFilters = require("./filters");
+var internals = require('./internals');
+var routing = require('./routing');
+var rxjsFilters = require('./filters');
 // exports.routing = routing;
 // exports.internals = internals;
 // exports.filters = filters;
@@ -57,14 +51,13 @@ var RxError = (function (_super) {
      * @param {string} [extra] (description)
      */
     function RxError(message, name, code, extra) {
-        var _this = _super.call(this) || this;
+        _super.call(this);
         var tmp = new Error(); // We use this to generate the stack info to assign to this error
-        _this.message = message;
-        _this.name = name;
-        _this.httpCode = code ? code : 500;
-        _this.stack = tmp.stack;
-        _this.extra = extra;
-        return _this;
+        this.message = message;
+        this.name = name;
+        this.httpCode = code ? code : 500;
+        this.stack = tmp.stack;
+        this.extra = extra;
     }
     /**
      * Return the http error code
@@ -543,7 +536,6 @@ var Embodiment = (function () {
         if (this.location) {
             /* tslint:disable */
             headers['Location'] = this.location;
-            /* tslint:enable */
         }
         // Add the additionalHeaders to the response
         _.forOwn(this.additionalHeaders, function (value, key) {
@@ -605,38 +597,37 @@ var Site = (function (_super) {
      * @param {Container} [parent] (description)
      */
     function Site(siteName, parent) {
-        var _this = _super.call(this, parent) || this;
+        _super.call(this, parent);
         // private _name: string = "site";
         /** @internal */
-        _this._version = version;
+        this._version = version;
         /** @internal */
-        _this._siteName = 'site';
+        this._siteName = 'site';
         /** @internal */
-        _this._home = '/';
+        this._home = '/';
         /** @internal */
-        _this._pathCache = {};
+        this._pathCache = {};
         /** @internal */
-        _this._errorView = undefined;
+        this._errorView = undefined;
         /** @internal */
-        _this._allowCors = false;
+        this._allowCors = false;
         /** @internal */
-        _this._filters = {};
+        this._filters = {};
         /**
          * (description)
          *
          * @type {boolean}
          */
-        _this.enableFilters = false;
-        _this._siteName = siteName;
+        this.enableFilters = false;
+        this._siteName = siteName;
         if (Site._instance) {
             throw new Error('Error: Only one site is allowed.');
         }
-        Site._instance = _this;
+        Site._instance = this;
         internals.initLog(siteName);
         if (_.find(process.argv, function (arg) { return arg === '--relaxjs-verbose'; })) {
             internals.setLogVerbose(true);
         }
-        return _this;
     }
     /**
      * (description)
@@ -1138,13 +1129,14 @@ var ResourcePlayer = (function (_super) {
      * Build a active resource by providing a Resource data object
      */
     function ResourcePlayer(res, parent) {
+        var _this = this;
         if (parent === void 0) { parent = undefined; }
-        var _this = _super.call(this, parent) || this;
+        _super.call(this, parent);
         // private _site: Site;
-        _this._template = '';
-        _this._parameters = {};
-        _this.filtersData = {};
-        var self = _this;
+        this._template = '';
+        this._parameters = {};
+        this.filtersData = {};
+        var self = this;
         self.setName(res.name);
         self._template = res.view;
         self._layout = res.layout;
@@ -1168,7 +1160,6 @@ var ResourcePlayer = (function (_super) {
         }
         // Merge the data into this object to easy access in the view.
         self._updateData(res.data);
-        return _this;
     }
     Object.defineProperty(ResourcePlayer.prototype, "outFormat", {
         // public data = {};

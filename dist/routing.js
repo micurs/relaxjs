@@ -1,12 +1,11 @@
-"use strict";
 /*
  * relaxjs route utility class
  * by Michele Ursino - 2015, 2016
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var url = require("url");
-var path = require("path");
-var _ = require("lodash");
+"use strict";
+var url = require('url');
+var path = require('path');
+var _ = require('lodash');
 /**
  * Route: helper class to routing requests to the correct resource
  * @export
